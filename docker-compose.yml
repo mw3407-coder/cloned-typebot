@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: typebot-db
+    restart: always
+    environment:
+      POSTGRES_USER: typebot
+      POSTGRES_PASSWORD: AYgUTrwtXCg1QRPBq2tPr7Kfs9zU0TAW
+      POSTGRES_DB: typebot
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - typebot-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U typebot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  builder:
+    image: ghcr.io/mw3407-coder/typebot-builder:latest
+    container_name: typebot-builder
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://typebot:AYgUTrwtXCg1QRPBq2tPr7Kfs9zU0TAW@postgres:5432/typebot?schema=public
+      ENCRYPTION_SECRET: 05738d49caa5b98217d756340509d8a9a20e4fbeb37115f3ce7ef49705cf489f
+      NEXTAUTH_URL: http://206.189.114.82:3000
+      NEXTAUTH_SECRET: 9f84750464220253d06b8d27408a2346ed2712153e6d83bb3279a75134dcfa7f
+      NEXT_PUBLIC_VIEWER_URL: http://206.189.114.82:3001
+      GITHUB_CLIENT_ID: Ov23lirMUALAhFrsHs3H
+      GITHUB_CLIENT_SECRET: d98ab9c81d5a007e7a734d0a2e148302cc05291a
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - typebot-network
+
+  viewer:
+    image: ghcr.io/mw3407-coder/typebot-viewer:latest
+    container_name: typebot-viewer
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      DATABASE_URL: postgresql://typebot:AYgUTrwtXCg1QRPBq2tPr7Kfs9zU0TAW@postgres:5432/typebot?schema=public
+      ENCRYPTION_SECRET: 05738d49caa5b98217d756340509d8a9a20e4fbeb37115f3ce7ef49705cf489f
+      NEXTAUTH_URL: http://206.189.114.82:3000
+      NEXTAUTH_SECRET: 9f84750464220253d06b8d27408a2346ed2712153e6d83bb3279a75134dcfa7f
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - typebot-network
+
+volumes:
+  postgres_data:
+
+networks:
+  typebot-network:
+    driver: bridge

@@ -1,0 +1,22 @@
+{
+  "name": "@typebot.io/theme",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./*": "./src/*.ts",
+    "./helpers/*": "./src/helpers/*.ts"
+  },
+  "dependencies": {
+    "@typebot.io/lib": "workspace:*",
+    "@typebot.io/prisma": "workspace:*",
+    "@typebot.io/ui": "workspace:*",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@typebot.io/tsconfig": "workspace:*"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  }
+}

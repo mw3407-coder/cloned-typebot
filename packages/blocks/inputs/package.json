@@ -1,0 +1,21 @@
+{
+  "name": "@typebot.io/blocks-inputs",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@typebot.io/blocks-base": "workspace:*",
+    "@typebot.io/variables": "workspace:*",
+    "@typebot.io/conditions": "workspace:*",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@typebot.io/tsconfig": "workspace:*"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  }
+}
