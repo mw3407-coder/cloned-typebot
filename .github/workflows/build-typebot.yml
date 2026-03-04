@@ -6,7 +6,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -28,10 +28,16 @@ jobs:
           bunx turbo build --filter=builder... --filter=viewer...
       - name: Build Builder Docker Image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/builder:latest ./apps/builder
+          docker build \
+            --build-arg SCOPE=builder \
+            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            -t ghcr.io/${{ github.repository }}/builder:latest .
       - name: Build Viewer Docker Image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/viewer:latest ./apps/viewer
+          docker build \
+            --build-arg SCOPE=viewer \
+            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            -t ghcr.io/${{ github.repository }}/viewer:latest .
       - name: Push Builder Image
         run: |
           docker push ghcr.io/${{ github.repository }}/builder:latest
