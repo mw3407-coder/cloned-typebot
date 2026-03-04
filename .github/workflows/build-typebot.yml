@@ -23,6 +23,7 @@ jobs:
           ENCRYPTION_SECRET: ${{ secrets.ENCRYPTION_SECRET }}
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
           NEXT_PUBLIC_VIEWER_URL: ${{ secrets.NEXT_PUBLIC_VIEWER_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           bunx turbo build --filter=builder... --filter=viewer...
       - name: Build Builder Docker Image
