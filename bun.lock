@@ -844,6 +844,16 @@
         "@types/react": "^19.2.7",
       },
     },
+    "packages/forge/blocks/facebookMessenger": {
+      "name": "@typebot.io/facebook-messenger-block",
+      "version": "1.0.0",
+      "dependencies": {
+        "@typebot.io/forge": "workspace:*",
+      },
+      "devDependencies": {
+        "@typebot.io/tsconfig": "workspace:*",
+      },
+    },
     "packages/forge/blocks/gmail": {
       "name": "@typebot.io/gmail-block",
       "dependencies": {
@@ -1045,6 +1055,7 @@
         "@typebot.io/deepseek-block": "workspace:*",
         "@typebot.io/dify-ai-block": "workspace:*",
         "@typebot.io/elevenlabs-block": "workspace:*",
+        "@typebot.io/facebook-messenger-block": "workspace:*",
         "@typebot.io/gmail-block": "workspace:*",
         "@typebot.io/groq-block": "workspace:*",
         "@typebot.io/mistral-block": "workspace:*",
@@ -3006,6 +3017,8 @@
     "@typebot.io/env": ["@typebot.io/env@workspace:packages/env"],
 
     "@typebot.io/events": ["@typebot.io/events@workspace:packages/events"],
+
+    "@typebot.io/facebook-messenger-block": ["@typebot.io/facebook-messenger-block@workspace:packages/forge/blocks/facebookMessenger"],
 
     "@typebot.io/file-input-block": ["@typebot.io/file-input-block@workspace:packages/blocks/fileInput"],
 
