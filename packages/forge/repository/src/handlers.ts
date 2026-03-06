@@ -15,6 +15,7 @@ import { elevenlabsBlock } from "@typebot.io/elevenlabs-block";
 import elevenlabsBlockHandlers from "@typebot.io/elevenlabs-block/handlers";
 import { gmailBlock } from "@typebot.io/gmail-block";
 import gmailBlockHandlers from "@typebot.io/gmail-block/handlers";
+import { facebookMessengerBlock } from "@typebot.io/facebook-messenger-block";
 import facebookMessengerBlockHandlers from "@typebot.io/facebook-messenger-block/handlers";
 import { groqBlock } from "@typebot.io/groq-block";
 import groqBlockHandlers from "@typebot.io/groq-block/handlers";
