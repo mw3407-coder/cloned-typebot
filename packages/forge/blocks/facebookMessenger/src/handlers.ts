@@ -65,6 +65,7 @@ function saveResponse(
 export default [
   createActionHandler(sendTextMessage, {
     server: async ({ credentials: { pageAccessToken }, options, logs, variables }) => {
+      if (!pageAccessToken) return logs.add("Page Access Token is missing.");
       const { recipientId, message, messageTag, responseMapping } = options;
       if (!recipientId) return logs.add("Recipient PSID is missing.");
       if (!message) return logs.add("Message text is missing.");
@@ -87,6 +88,7 @@ export default [
 
   createActionHandler(sendAttachment, {
     server: async ({ credentials: { pageAccessToken }, options, logs, variables }) => {
+      if (!pageAccessToken) return logs.add("Page Access Token is missing.");
       const { recipientId, attachmentType, url, responseMapping } = options;
       if (!recipientId) return logs.add("Recipient PSID is missing.");
       if (!url) return logs.add("File URL is missing.");
@@ -110,6 +112,7 @@ export default [
 
   createActionHandler(sendTypingIndicator, {
     server: async ({ credentials: { pageAccessToken }, options, logs }) => {
+      if (!pageAccessToken) return logs.add("Page Access Token is missing.");
       const { recipientId, senderAction } = options;
       if (!recipientId) return logs.add("Recipient PSID is missing.");
       const body = {
@@ -126,6 +129,7 @@ export default [
 
   createActionHandler(sendGenericTemplate, {
     server: async ({ credentials: { pageAccessToken }, options, logs, variables }) => {
+      if (!pageAccessToken) return logs.add("Page Access Token is missing.");
       const { recipientId, cards, responseMapping } = options;
       if (!recipientId) return logs.add("Recipient PSID is missing.");
       if (!cards || cards.length === 0) return logs.add("At least one card is required.");
@@ -166,6 +170,7 @@ export default [
 
   createActionHandler(sendButtonTemplate, {
     server: async ({ credentials: { pageAccessToken }, options, logs, variables }) => {
+      if (!pageAccessToken) return logs.add("Page Access Token is missing.");
       const { recipientId, bodyText, buttons, responseMapping } = options;
       if (!recipientId) return logs.add("Recipient PSID is missing.");
       if (!bodyText) return logs.add("Body text is missing.");
@@ -196,6 +201,7 @@ export default [
 
   createActionHandler(sendQuickReplies, {
     server: async ({ credentials: { pageAccessToken }, options, logs, variables }) => {
+      if (!pageAccessToken) return logs.add("Page Access Token is missing.");
       const { recipientId, messageText, quickReplies, responseMapping } = options;
       if (!recipientId) return logs.add("Recipient PSID is missing.");
       if (!messageText) return logs.add("Message text is missing.");
@@ -225,6 +231,7 @@ export default [
 
   createActionHandler(sendListTemplate, {
     server: async ({ credentials: { pageAccessToken }, options, logs, variables }) => {
+      if (!pageAccessToken) return logs.add("Page Access Token is missing.");
       const { recipientId, items, globalButtonTitle, globalButtonUrl, responseMapping } = options;
       if (!recipientId) return logs.add("Recipient PSID is missing.");
       if (!items || items.length < 2) return logs.add("At least 2 list items are required.");
@@ -264,6 +271,7 @@ export default [
 
   createActionHandler(sendMediaTemplate, {
     server: async ({ credentials: { pageAccessToken }, options, logs, variables }) => {
+      if (!pageAccessToken) return logs.add("Page Access Token is missing.");
       const { recipientId, mediaType, url, attachmentId, buttons, responseMapping } = options;
       if (!recipientId) return logs.add("Recipient PSID is missing.");
       if (!url && !attachmentId) return logs.add("Either a URL or Attachment ID is required.");
@@ -297,6 +305,7 @@ export default [
 
   createActionHandler(sendReceiptTemplate, {
     server: async ({ credentials: { pageAccessToken }, options, logs, variables }) => {
+      if (!pageAccessToken) return logs.add("Page Access Token is missing.");
       const {
         recipientId, recipientName, orderNumber, currency, paymentMethod,
         orderUrl, street1, street2, city, state, postalCode, country,
@@ -352,6 +361,7 @@ export default [
 
   createActionHandler(sendOneTimeNotification, {
     server: async ({ credentials: { pageAccessToken }, options, logs, variables }) => {
+      if (!pageAccessToken) return logs.add("Page Access Token is missing.");
       const { recipientId, title, payload, responseMapping } = options;
       if (!recipientId) return logs.add("Recipient PSID is missing.");
       if (!title) return logs.add("Notification topic title is required.");
@@ -376,6 +386,7 @@ export default [
 
   createActionHandler(setPersistentMenu, {
     server: async ({ credentials: { pageAccessToken }, options, logs, variables }) => {
+      if (!pageAccessToken) return logs.add("Page Access Token is missing.");
       const { menuItems, responseMapping } = options;
       if (!menuItems || menuItems.length === 0) return logs.add("At least one menu item is required.");
       const callToActions = menuItems.slice(0, 3).map((item) =>
@@ -397,6 +408,7 @@ export default [
 
   createActionHandler(setGreetingText, {
     server: async ({ credentials: { pageAccessToken }, options, logs, variables }) => {
+      if (!pageAccessToken) return logs.add("Page Access Token is missing.");
       const { greetingText, locale, responseMapping } = options;
       if (!greetingText) return logs.add("Greeting text is required.");
       const body = { greeting: [{ locale: locale ?? "default", text: greetingText }] };
@@ -411,6 +423,7 @@ export default [
 
   createActionHandler(setGetStartedButton, {
     server: async ({ credentials: { pageAccessToken }, options, logs, variables }) => {
+      if (!pageAccessToken) return logs.add("Page Access Token is missing.");
       const { payload, responseMapping } = options;
       if (!payload) return logs.add("Payload is required.");
       const body = { get_started: { payload } };
