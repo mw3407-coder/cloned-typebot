@@ -56,3 +56,14 @@ jobs:
           docker push ghcr.io/${{ github.repository }}/viewer:latest
       - name: Build Complete
         run: echo "✅ Typebot build complete! Images ready for deployment."
+      - name: Deploy to Droplet
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 134.209.179.191
+          username: root
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            cd ~/typebot
+            docker compose pull
+            docker compose up -d --force-recreate
+            echo "✅ Deployment complete!"
