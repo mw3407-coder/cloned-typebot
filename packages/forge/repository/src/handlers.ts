@@ -15,6 +15,7 @@ import { elevenlabsBlock } from "@typebot.io/elevenlabs-block";
 import elevenlabsBlockHandlers from "@typebot.io/elevenlabs-block/handlers";
 import { gmailBlock } from "@typebot.io/gmail-block";
 import gmailBlockHandlers from "@typebot.io/gmail-block/handlers";
+import facebookMessengerBlockHandlers from "@typebot.io/facebook-messenger-block/handlers";
 import { groqBlock } from "@typebot.io/groq-block";
 import groqBlockHandlers from "@typebot.io/groq-block/handlers";
 import { mistralBlock } from "@typebot.io/mistral-block";
@@ -58,4 +59,5 @@ export const forgedBlockHandlers = {
   [deepSeekBlock.id]: deepSeekBlockHandlers,
   [blinkBlock.id]: blinkBlockHandlers,
   [gmailBlock.id]: gmailBlockHandlers,
+  [facebookMessengerBlock.id]: facebookMessengerBlockHandlers,
 };
