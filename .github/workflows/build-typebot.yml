@@ -80,18 +80,3 @@ jobs:
 
       - name: Build Complete
         run: echo "✅ Typebot build complete and deployed!"
-```
-
----
-
-**Step 4: Commit the change**
-
-Scroll down, make sure **"Commit directly to the main branch"** is selected, then click **"Commit changes"**.
-
----
-
-**Step 5: Watch the workflow run**
-
-Go to:
-```
-https://github.com/mw3407-coder/cloned-typebot/actions
