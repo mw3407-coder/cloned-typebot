@@ -2,15 +2,13 @@ name: Build Typebot Images
 on:
   push:
     branches: [main]
-  workflow_dispatch: # Allows manual trigger
+  workflow_dispatch:
 permissions:
   contents: read
   packages: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -63,6 +61,7 @@ jobs:
           username: root
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u mw3407-coder --password-stdin
             cd ~/typebot
             docker compose pull
             docker compose up -d --force-recreate
