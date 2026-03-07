@@ -71,4 +71,18 @@ jobs:
           docker push ghcr.io/${{ github.repository }}/typebot-viewer:latest
       
       - name: Build Complete
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: 134.209.179.191
+          username: root
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u mw3407-coder --password-stdin
+            cd ~/typebot
+            docker compose pull
+            docker compose up -d --force-recreate
+            docker image prune -f
+
+      - name: Build Complete
         run: echo "✅ Typebot build complete! Images pushed to GHCR"
