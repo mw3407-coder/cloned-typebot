@@ -56,11 +56,11 @@ jobs:
       
       - name: Build Builder Docker Image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/typebot-builder:latest ./apps/builder
+          docker build --build-arg SCOPE=builder -t ghcr.io/${{ github.repository }}/typebot-builder:latest .
       
       - name: Build Viewer Docker Image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/typebot-viewer:latest ./apps/viewer
+          docker build --build-arg SCOPE=viewer -t ghcr.io/${{ github.repository }}/typebot-viewer:latest .
       
       - name: Push Builder Image
         run: |
