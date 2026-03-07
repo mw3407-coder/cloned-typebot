@@ -21,10 +21,29 @@ jobs:
       - name: Install dependencies
         run: bun install
       
+      - name: Create .env files
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ENCRYPTION_SECRET: ${{ secrets.ENCRYPTION_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          NEXT_PUBLIC_VIEWER_URL: ${{ secrets.NEXT_PUBLIC_VIEWER_URL }}
+        run: |
+          echo "DATABASE_URL=${DATABASE_URL}" >> .env
+          echo "ENCRYPTION_SECRET=${ENCRYPTION_SECRET}" >> .env
+          echo "NEXTAUTH_URL=${NEXTAUTH_URL}" >> .env
+          echo "NEXT_PUBLIC_VIEWER_URL=${NEXT_PUBLIC_VIEWER_URL}" >> .env
+          cp .env apps/builder/.env
+          cp .env apps/viewer/.env
+          wc -l .env
+
       - name: Build Typebot (Builder + Viewer)
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
           TURBO_CONCURRENCY: "2"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ENCRYPTION_SECRET: ${{ secrets.ENCRYPTION_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          NEXT_PUBLIC_VIEWER_URL: ${{ secrets.NEXT_PUBLIC_VIEWER_URL }}
         run: |
           bunx turbo build --filter=builder... --filter=viewer...
       
