@@ -53,10 +53,10 @@ export const MessengerPreviewInstructions = ({
           defaultValue={psid}
           onValueChange={setPsid}
         />
-        <Field.HelperText>
+        <p className="text-sm text-gray-500">
           Your Page-Scoped User ID. Send any message to your page first, then
           find it in the webhook payload or Graph API Explorer.
-        </Field.HelperText>
+        </p>
       </Field.Root>
       {!isMessageSent && (
         <Button disabled={isEmpty(psid) || isSending} type="submit">
