@@ -127,7 +127,7 @@ export const resumeMessengerFlow = async ({
         }
       }
 
-      await upsertSession({ state: newSessionState, id: sessionId, isReplying: false });
+      await upsertSession(sessionId, { state: newSessionState, isReplying: false });
 
       await saveStateToDatabase({
         clientSideActions: [],
