@@ -4,6 +4,7 @@ import { billingRouter } from "@typebot.io/billing/api/router";
 import { publicProcedure } from "@typebot.io/config/orpc/builder/middlewares";
 import { fileUploadBuilderRouter } from "@typebot.io/file-input-block/api/router";
 import { builderWhatsAppRouter } from "@typebot.io/whatsapp/api/router";
+import { builderMessengerRouter } from "@/features/messenger/api/router";
 import { z } from "zod";
 import { analyticsRouter } from "@/features/analytics/api/router";
 import { googleSheetsRouter } from "@/features/blocks/integrations/googleSheets/api/router";
@@ -38,6 +39,7 @@ export const appRouter = {
   collaborators: collaboratorsRouter,
   customDomains: customDomainsRouter,
   whatsApp: builderWhatsAppRouter,
+  messenger: builderMessengerRouter,
   folders: folderRouter,
   emails: emailsRouter,
   user: userRouter,
