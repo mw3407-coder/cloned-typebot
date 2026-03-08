@@ -1,4 +1,4 @@
-import { useMutation } from "@tanqstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { isEmpty } from "@typebot.io/lib/utils";
 import { Alert } from "@typebot.io/ui/components/Alert";
 import { Button } from "@typebot.io/ui/components/Button";
