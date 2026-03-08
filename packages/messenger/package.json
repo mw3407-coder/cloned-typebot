@@ -1,0 +1,28 @@
+{
+  "name": "@typebot.io/messenger",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./api/router": "./src/api/router.ts"
+  },
+  "dependencies": {
+    "@typebot.io/bot-engine": "workspace:*",
+    "@typebot.io/chat-api": "workspace:*",
+    "@typebot.io/chat-session": "workspace:*",
+    "@typebot.io/config": "workspace:*",
+    "@typebot.io/credentials": "workspace:*",
+    "@typebot.io/env": "workspace:*",
+    "@typebot.io/lib": "workspace:*",
+    "@typebot.io/prisma": "workspace:*",
+    "@typebot.io/runtime-session-store": "workspace:*",
+    "@orpc/server": "workspace:*",
+    "zod": "workspace:*"
+  },
+  "devDependencies": {
+    "@typebot.io/tsconfig": "workspace:*"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  }
+}

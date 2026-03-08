@@ -6,6 +6,7 @@ import {
 import { fileUploadViewerRouter } from "@typebot.io/file-input-block/api/router";
 import { webhookRouter } from "@typebot.io/webhook-block/api/router";
 import { chatWhatsAppRouter } from "@typebot.io/whatsapp/api/router";
+import { chatMessengerRouter } from "@typebot.io/messenger/api/router";
 import { z } from "zod";
 import {
   getMakeComBlocksInputSchema,
@@ -64,6 +65,7 @@ export const appRouter = {
   },
   webhook: webhookRouter,
   chatWhatsAppRouter,
+  chatMessengerRouter,
 };
 
 export type AppRouter = typeof appRouter;
