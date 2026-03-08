@@ -16,8 +16,8 @@
     "@typebot.io/lib": "workspace:*",
     "@typebot.io/prisma": "workspace:*",
     "@typebot.io/runtime-session-store": "workspace:*",
-    "@orpc/server": "workspace:*",
-    "zod": "workspace:*"
+    "zod": "^4.3.5",
+    "@orpc/server": "^1.13.4"
   },
   "devDependencies": {
     "@typebot.io/tsconfig": "workspace:*"
