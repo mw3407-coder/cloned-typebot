@@ -92,11 +92,16 @@ export const resumeMessengerFlow = async ({
     } else {
       const typebotRecord = await prisma.typebot.findFirst({
         where: { workspaceId },
-        select: { id: true },
+        select: { id: true, publicId: true },
       });
 
       if (typebotRecord === null) {
         console.error("No typebot found for workspace", workspaceId);
+        return;
+      }
+
+      if (typebotRecord.publicId === null) {
+        console.error("Typebot has no publicId", typebotRecord.id);
         return;
       }
 
@@ -107,7 +112,7 @@ export const resumeMessengerFlow = async ({
           startParams: {
             type: "live",
             isOnlyRegistering: false,
-            typebotId: typebotRecord.id,
+            publicId: typebotRecord.publicId,
             isStreamEnabled: false,
             textBubbleContentFormat: "richText",
           },
