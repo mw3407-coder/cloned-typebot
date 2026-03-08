@@ -20,7 +20,7 @@ export const chatMessengerRouter = {
       tags: ["Messenger"],
     })
     .input(messengerVerificationInputSchema)
-    .output(z.number())
+    .output(z.string())
     .handler(handleMessengerVerification),
 
   incomingMessage: publicProcedure

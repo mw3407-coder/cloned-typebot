@@ -26,5 +26,5 @@ export const handleMessengerVerification = async ({
       message: "Invalid verify token",
     });
   }
-  return Number(input["hub.challenge"]);
+  return input["hub.challenge"];
 };
