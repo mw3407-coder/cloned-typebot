@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanqstack/react-query";
 import { isEmpty } from "@typebot.io/lib/utils";
 import { Alert } from "@typebot.io/ui/components/Alert";
 import { Button } from "@typebot.io/ui/components/Button";
@@ -8,6 +8,7 @@ import { ArrowUpRight01Icon } from "@typebot.io/ui/icons/ArrowUpRight01Icon";
 import { CheckmarkSquare02Icon } from "@typebot.io/ui/icons/CheckmarkSquare02Icon";
 import { cn } from "@typebot.io/ui/lib/cn";
 import { useState } from "react";
+import { ButtonLink } from "@/components/ButtonLink";
 import { useTypebot } from "@/features/editor/providers/TypebotProvider";
 import { orpc } from "@/lib/queryClient";
 
@@ -53,24 +54,16 @@ export const MessengerPreviewInstructions = ({
         </p>
       </Field.Root>
       {!isMessageSent && (
-        <Button
-          disabled={isEmpty(psid) || isSending}
-          onClick={handleStart}
-        >
+        <Button disabled={isEmpty(psid) || isSending} onClick={handleStart}>
           {isSending ? "Sending..." : "Start the chat"}
         </Button>
       )}
       {isMessageSent && (
         <div className="flex flex-col gap-2 animate-in fade-in-0 slide-in-from-bottom-2">
-          
-            href="https://www.messenger.com"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-1 justify-center rounded-md border px-4 py-2 text-sm font-medium hover:bg-gray-50"
-          >
+          <ButtonLink href="https://www.messenger.com" target="_blank">
             Open Messenger
             <ArrowUpRight01Icon />
-          </a>
+          </ButtonLink>
           <Alert.Root variant="success">
             <CheckmarkSquare02Icon />
             <Alert.Title>Chat started!</Alert.Title>
