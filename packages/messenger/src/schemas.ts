@@ -28,6 +28,6 @@ export const messengerWebhookRequestBodySchema = z.object({
   ),
 });
 
-export type MessengerWebhookRequestBody = z.infer
+export type MessengerWebhookRequestBody = z.infer<
   typeof messengerWebhookRequestBodySchema
 >;

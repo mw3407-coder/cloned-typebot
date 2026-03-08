@@ -10,6 +10,20 @@ import { withSessionStore } from "@typebot.io/runtime-session-store";
 import { MESSENGER_SESSION_ID_PREFIX } from "./constants";
 import { sendMessengerMessage } from "./sendMessengerMessage";
 
+type RichTextBlock = { children?: { text?: string }[] };
+
+type BotMessage = {
+  type: string;
+  content: string | { richText?: RichTextBlock[] };
+};
+
+function extractText(message: BotMessage): string {
+  if (typeof message.content === "string") return message.content;
+  return (message.content.richText ?? [])
+    .map((block) => (block.children ?? []).map((c) => c.text ?? "").join(""))
+    .join(" ");
+}
+
 type Props = {
   psid: string;
   text: string | undefined;
@@ -46,11 +60,8 @@ export const resumeMessengerFlow = async ({
     const existingSession = await getSession(sessionId);
 
     if (existingSession?.state !== undefined && existingSession?.state !== null) {
-      // Resume existing session
       const reply =
-        text !== undefined
-          ? { type: "text" as const, text }
-          : undefined;
+        text !== undefined ? { type: "text" as const, text } : undefined;
 
       const { messages, input, logs, visitedEdges, setVariableHistory, newSessionState } =
         await continueBotFlow(reply, {
@@ -62,21 +73,9 @@ export const resumeMessengerFlow = async ({
 
       for (const message of messages) {
         if (message.type === "text") {
-          const plainText =
-            typeof message.content === "string"
-              ? message.content
-              : message.content.richText
-                  ?.map((block: { children?: { text?: string }[] }) =>
-                    block.children?.map((c) => c.text ?? "").join("") ?? ""
-                  )
-                  .join("
-") ?? "";
+          const plainText = extractText(message as BotMessage);
           if (plainText.length > 0) {
-            await sendMessengerMessage({
-              to: psid,
-              message: { text: plainText },
-              pageAccessToken,
-            });
+            await sendMessengerMessage({ to: psid, message: { text: plainText }, pageAccessToken });
           }
         }
       }
@@ -91,10 +90,9 @@ export const resumeMessengerFlow = async ({
         setVariableHistory,
       });
     } else {
-      // Start new session - find typebot with this credentialsId
       const typebotRecord = await prisma.typebot.findFirst({
         where: { workspaceId },
-        select: { id: true, groups: true },
+        select: { id: true },
       });
 
       if (typebotRecord === null) {
@@ -117,30 +115,14 @@ export const resumeMessengerFlow = async ({
 
       for (const message of messages) {
         if (message.type === "text") {
-          const plainText =
-            typeof message.content === "string"
-              ? message.content
-              : message.content.richText
-                  ?.map((block: { children?: { text?: string }[] }) =>
-                    block.children?.map((c) => c.text ?? "").join("") ?? ""
-                  )
-                  .join("
-") ?? "";
+          const plainText = extractText(message as BotMessage);
           if (plainText.length > 0) {
-            await sendMessengerMessage({
-              to: psid,
-              message: { text: plainText },
-              pageAccessToken,
-            });
+            await sendMessengerMessage({ to: psid, message: { text: plainText }, pageAccessToken });
           }
         }
       }
 
-      await upsertSession({
-        state: newSessionState,
-        id: sessionId,
-        isReplying: false,
-      });
+      await upsertSession({ state: newSessionState, id: sessionId, isReplying: false });
 
       await saveStateToDatabase({
         clientSideActions: [],
