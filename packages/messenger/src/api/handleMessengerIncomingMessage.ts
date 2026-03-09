@@ -14,19 +14,22 @@ export const handleMessengerIncomingMessage = async ({
 }: {
   input: z.infer<typeof messengerIncomingMessageInputSchema>;
 }) => {
+  console.log("[Messenger] handleMessengerIncomingMessage called", { workspaceId, credentialsId, entryCount: entry.length });
   for (const e of entry) {
     for (const messaging of e.messaging) {
       const psid = messaging.sender.id;
       const text = messaging.message?.text ?? messaging.postback?.payload;
+      console.log("[Messenger] Processing message", { psid, text });
       try {
-        await resumeMessengerFlow({
+        const result = await resumeMessengerFlow({
           psid,
           text,
           workspaceId,
           credentialsId,
         });
+        console.log("[Messenger] resumeMessengerFlow result", result);
       } catch (err) {
-        console.error("Error processing Messenger message", err);
+        console.error("[Messenger] Error in resumeMessengerFlow", err);
       }
     }
   }
