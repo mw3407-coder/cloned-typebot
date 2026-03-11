@@ -111,7 +111,7 @@ export const resumeMessengerFlow = async ({
         clientSideActions: [],
         input,
         logs,
-        sessionId: { type: "existing", id: sessionId },
+        sessionId: { type: "new", id: sessionId },
         session: { state: newSessionState },
         visitedEdges,
         setVariableHistory,
