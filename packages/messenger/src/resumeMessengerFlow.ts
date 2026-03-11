@@ -37,7 +37,10 @@ export const resumeMessengerFlow = async ({
   workspaceId,
   credentialsId,
 }: Props): Promise<void> => {
+  console.log("[Messenger] resumeMessengerFlow start");
+
   const encryptedCredentials = await getCredentials(credentialsId, workspaceId);
+  console.log("[Messenger] credentials found:", !!encryptedCredentials);
   if (encryptedCredentials === null) {
     console.error("Messenger credentials not found", credentialsId);
     return;
@@ -49,33 +52,57 @@ export const resumeMessengerFlow = async ({
   )) as { pageAccessToken?: string };
 
   const pageAccessToken = decrypted.pageAccessToken;
+  console.log("[Messenger] pageAccessToken found:", !!pageAccessToken);
   if (pageAccessToken === undefined) {
     console.error("Page access token missing in credentials");
     return;
   }
 
   const sessionId = `${MESSENGER_SESSION_ID_PREFIX}${credentialsId}-${psid}`;
+  console.log("[Messenger] sessionId:", sessionId);
 
   await withSessionStore(sessionId, async (sessionStore) => {
-    const existingSession = await getSession(sessionId);
+    console.log("[Messenger] inside withSessionStore");
 
-    if (existingSession?.state !== undefined && existingSession?.state !== null) {
+    const existingSession = await getSession(sessionId);
+    console.log(
+      "[Messenger] existingSession:",
+      existingSession?.state ? "found" : "null",
+    );
+
+    if (
+      existingSession?.state !== undefined &&
+      existingSession?.state !== null
+    ) {
+      console.log("[Messenger] continuing existing session");
       const reply =
         text !== undefined ? { type: "text" as const, text } : undefined;
 
-      const { messages, input, logs, visitedEdges, setVariableHistory, newSessionState } =
-        await continueBotFlow(reply, {
-          version: 2,
-          sessionStore,
-          state: existingSession.state,
-          textBubbleContentFormat: "richText",
-        });
+      const {
+        messages,
+        input,
+        logs,
+        visitedEdges,
+        setVariableHistory,
+        newSessionState,
+      } = await continueBotFlow(reply, {
+        version: 2,
+        sessionStore,
+        state: existingSession.state,
+        textBubbleContentFormat: "richText",
+      });
+
+      console.log("[Messenger] continueBotFlow messages:", messages.length);
 
       for (const message of messages) {
         if (message.type === "text") {
           const plainText = extractText(message as BotMessage);
           if (plainText.length > 0) {
-            await sendMessengerMessage({ to: psid, message: { text: plainText }, pageAccessToken });
+            await sendMessengerMessage({
+              to: psid,
+              message: { text: plainText },
+              pageAccessToken,
+            });
           }
         }
       }
@@ -90,10 +117,14 @@ export const resumeMessengerFlow = async ({
         setVariableHistory,
       });
     } else {
+      console.log("[Messenger] starting new session");
+
       const typebotRecord = await prisma.typebot.findFirst({
         where: { workspaceId },
         select: { id: true, publicId: true },
       });
+
+      console.log("[Messenger] typebotRecord:", typebotRecord?.id ?? "null");
 
       if (typebotRecord === null) {
         console.error("No typebot found for workspace", workspaceId);
@@ -105,29 +136,49 @@ export const resumeMessengerFlow = async ({
         return;
       }
 
-      const { messages, input, newSessionState, logs, visitedEdges, setVariableHistory } =
-        await startSession({
-          version: 2,
-          sessionStore,
-          startParams: {
-            type: "live",
-            isOnlyRegistering: false,
-            publicId: typebotRecord.publicId,
-            isStreamEnabled: false,
-            textBubbleContentFormat: "richText",
-          },
-        });
+      console.log(
+        "[Messenger] calling startSession with publicId:",
+        typebotRecord.publicId,
+      );
+
+      const {
+        messages,
+        input,
+        newSessionState,
+        logs,
+        visitedEdges,
+        setVariableHistory,
+      } = await startSession({
+        version: 2,
+        sessionStore,
+        startParams: {
+          type: "live",
+          isOnlyRegistering: false,
+          publicId: typebotRecord.publicId,
+          isStreamEnabled: false,
+          textBubbleContentFormat: "richText",
+        },
+      });
+
+      console.log("[Messenger] startSession messages:", messages.length);
 
       for (const message of messages) {
         if (message.type === "text") {
           const plainText = extractText(message as BotMessage);
           if (plainText.length > 0) {
-            await sendMessengerMessage({ to: psid, message: { text: plainText }, pageAccessToken });
+            await sendMessengerMessage({
+              to: psid,
+              message: { text: plainText },
+              pageAccessToken,
+            });
           }
         }
       }
 
-      await upsertSession(sessionId, { state: newSessionState, isReplying: false });
+      await upsertSession(sessionId, {
+        state: newSessionState,
+        isReplying: false,
+      });
 
       await saveStateToDatabase({
         clientSideActions: [],
@@ -138,6 +189,10 @@ export const resumeMessengerFlow = async ({
         visitedEdges,
         setVariableHistory,
       });
+
+      console.log("[Messenger] new session saved successfully");
     }
+  }).catch((err) => {
+    console.error("[Messenger] withSessionStore threw:", err);
   });
 };
