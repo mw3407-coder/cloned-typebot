@@ -25,6 +25,7 @@ export async function POST(
   after(async () => {
     for (const entry of body.entry ?? []) {
       for (const messaging of entry.messaging ?? []) {
+        if (messaging.message?.is_echo) continue;
         const psid = messaging.sender?.id;
         const text = messaging.message?.text ?? messaging.postback?.payload;
         if (psid) {
