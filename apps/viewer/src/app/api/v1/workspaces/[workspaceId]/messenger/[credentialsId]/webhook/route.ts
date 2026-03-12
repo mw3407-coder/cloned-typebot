@@ -22,7 +22,6 @@ export async function POST(
 ) {
   const { workspaceId, credentialsId } = await params;
   const body = await request.json();
-  console.log("[Messenger] RAW BODY:", JSON.stringify(body, null, 2));
   after(async () => {
     for (const entry of body.entry ?? []) {
       for (const messaging of entry.messaging ?? []) {
