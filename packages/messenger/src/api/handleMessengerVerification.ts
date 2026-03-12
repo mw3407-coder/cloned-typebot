@@ -26,5 +26,10 @@ export const handleMessengerVerification = async ({
       message: "Invalid verify token",
     });
   }
-  return input["hub.challenge"];
+  // Return as plain text so Facebook receives the raw challenge value
+  // (not JSON-wrapped in quotes, which causes validation to fail).
+  return {
+    headers: { "content-type": "text/plain" },
+    body: input["hub.challenge"],
+  };
 };

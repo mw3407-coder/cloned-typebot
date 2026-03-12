@@ -18,9 +18,17 @@ export const chatMessengerRouter = {
       path: "/v1/workspaces/{workspaceId}/messenger/{credentialsId}/webhook",
       summary: "Verify Messenger webhook",
       tags: ["Messenger"],
+      outputStructure: "detailed",
     })
     .input(messengerVerificationInputSchema)
-    .output(z.string())
+    .output(
+      z.object({
+        headers: z.object({
+          "content-type": z.string(),
+        }),
+        body: z.string(),
+      }),
+    )
     .handler(handleMessengerVerification),
 
   incomingMessage: publicProcedure
