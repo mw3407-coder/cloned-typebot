@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./api/router": "./src/api/router.ts"
+    "./api/router": "./src/api/router.ts",
+    "./resumeMessengerFlow": "./src/resumeMessengerFlow.ts"
   },
   "dependencies": {
     "@typebot.io/bot-engine": "workspace:*",
