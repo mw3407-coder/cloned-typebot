@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { WEBHOOK_SUCCESS_MESSAGE } from "../constants";
-import { messengerWebhookRequestBodySchema } from "../schemas";
 import { resumeMessengerFlow } from "../resumeMessengerFlow";
+import { messengerWebhookRequestBodySchema } from "../schemas";
 
 export const messengerIncomingMessageInputSchema =
   messengerWebhookRequestBodySchema.extend({
@@ -14,7 +14,11 @@ export const handleMessengerIncomingMessage = ({
 }: {
   input: z.infer<typeof messengerIncomingMessageInputSchema>;
 }) => {
-  console.log("[Messenger] handleMessengerIncomingMessage called", { workspaceId, credentialsId, entryCount: entry.length });
+  console.log("[Messenger] handleMessengerIncomingMessage called", {
+    workspaceId,
+    credentialsId,
+    entryCount: entry.length,
+  });
 
   // Fire-and-forget: process the flow asynchronously so we return
   // WEBHOOK_SUCCESS_MESSAGE to Facebook immediately and prevent retries.
