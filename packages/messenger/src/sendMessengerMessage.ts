@@ -1,37 +1,41 @@
-const GRAPH_API = "https://graph.facebook.com/v19.0";
+// ─────────────────────────────────────────────────────────────────────────────
+// packages/messenger/src/sendMessengerMessage.ts
+// ─────────────────────────────────────────────────────────────────────────────
 
-type QuickReply = {
-  content_type: "text";
-  title: string;
-  payload: string;
+import type { MessengerMessage } from "./messengerTypes";
+
+const FB_API_VERSION = "v19.0";
+const FB_MESSAGES_URL = `https://graph.facebook.com/${FB_API_VERSION}/me/messages`;
+
+type SendMessageParams = {
+  to: string;              // PSID (Page-Scoped User ID)
+  message: MessengerMessage;
+  pageAccessToken: string;
 };
 
-type MessengerMessage =
-  | { text: string }
-  | { text: string; quick_replies: QuickReply[] };
-
-export const sendMessengerMessage = async ({
+export async function sendMessengerMessage({
   to,
   message,
   pageAccessToken,
-}: {
-  to: string;
-  message: MessengerMessage;
-  pageAccessToken: string;
-}): Promise<void> => {
-  const res = await fetch(
-    `${GRAPH_API}/me/messages?access_token=${pageAccessToken}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        recipient: { id: to },
-        message,
-      }),
-    },
-  );
-  if (res.ok === false) {
-    const data = await res.json();
-    throw new Error(`Messenger API error: ${JSON.stringify(data)}`);
+}: SendMessageParams): Promise<void> {
+  const body = {
+    recipient: { id: to },
+    message,
+    messaging_type: "RESPONSE",
+    access_token: pageAccessToken,
+  };
+
+  const res = await fetch(FB_MESSAGES_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    console.error("[Messenger] Send failed:", JSON.stringify(err));
+    throw new Error(
+      `Facebook Send API error ${res.status}: ${JSON.stringify(err)}`
+    );
   }
-};
+}
