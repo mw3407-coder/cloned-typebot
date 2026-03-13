@@ -14,7 +14,7 @@
 import { BotMessage } from "@typebot.io/bot-engine/schemas/api";
 import { continueBotFlow } from "@typebot.io/bot-engine/continueBotFlow";
 import { startSession } from "@typebot.io/bot-engine/startSession";
-import { prisma } from "@typebot.io/prisma";
+import prisma from "@typebot.io/prisma";
 import { convertInputToMessengerMessage } from "./convertInputToMessengerMessage";
 import { sendMessengerMessage } from "./sendMessengerMessage";
 import { sendTypingIndicator } from "./sendTypingIndicator";
