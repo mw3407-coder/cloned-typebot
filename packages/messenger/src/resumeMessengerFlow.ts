@@ -8,6 +8,7 @@ import { getCredentials } from "@typebot.io/credentials/getCredentials";
 import prisma from "@typebot.io/prisma";
 import { withSessionStore } from "@typebot.io/runtime-session-store";
 import { MESSENGER_SESSION_ID_PREFIX } from "./constants";
+import { convertInputToMessengerMessage } from "./convertInputToMessengerMessage";
 import { sendMessengerMessage } from "./sendMessengerMessage";
 
 type RichTextBlock = { children?: { text?: string }[] };
@@ -94,6 +95,7 @@ export const resumeMessengerFlow = async ({
 
       console.log("[Messenger] continueBotFlow messages:", messages.length);
 
+      let lastMessageText: string | undefined;
       for (const message of messages) {
         if (message.type === "text") {
           const plainText = extractText(message as BotMessage);
@@ -103,7 +105,19 @@ export const resumeMessengerFlow = async ({
               message: { text: plainText },
               pageAccessToken,
             });
+            lastMessageText = plainText;
           }
+        }
+      }
+
+      if (input) {
+        const inputMessage = convertInputToMessengerMessage(input, lastMessageText);
+        if (inputMessage) {
+          await sendMessengerMessage({
+            to: psid,
+            message: inputMessage,
+            pageAccessToken,
+          });
         }
       }
 
@@ -162,6 +176,7 @@ export const resumeMessengerFlow = async ({
 
       console.log("[Messenger] startSession messages:", messages.length);
 
+      let lastMessageText: string | undefined;
       for (const message of messages) {
         if (message.type === "text") {
           const plainText = extractText(message as BotMessage);
@@ -171,7 +186,19 @@ export const resumeMessengerFlow = async ({
               message: { text: plainText },
               pageAccessToken,
             });
+            lastMessageText = plainText;
           }
+        }
+      }
+
+      if (input) {
+        const inputMessage = convertInputToMessengerMessage(input, lastMessageText);
+        if (inputMessage) {
+          await sendMessengerMessage({
+            to: psid,
+            message: inputMessage,
+            pageAccessToken,
+          });
         }
       }
 

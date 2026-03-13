@@ -1,12 +1,22 @@
 const GRAPH_API = "https://graph.facebook.com/v19.0";
 
+type QuickReply = {
+  content_type: "text";
+  title: string;
+  payload: string;
+};
+
+type MessengerMessage =
+  | { text: string }
+  | { text: string; quick_replies: QuickReply[] };
+
 export const sendMessengerMessage = async ({
   to,
   message,
   pageAccessToken,
 }: {
   to: string;
-  message: { text: string };
+  message: MessengerMessage;
   pageAccessToken: string;
 }): Promise<void> => {
   const res = await fetch(
