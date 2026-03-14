@@ -35,7 +35,7 @@ export function convertInputToMessengerMessage(
   // ── Choice / Multiple Choice ──────────────────────────────────────────────
   if (input.type === InputBlockType.CHOICE) {
     const items: Array<{ content?: string }> =
-      (input.options as any)?.items ?? [];
+      (input as any)?.items ?? (input.options as any)?.items ?? [];
 
     if (items.length === 0) return null;
 
