@@ -31,7 +31,7 @@ export async function POST(
             const psid = change.value?.sender?.id ?? change.value?.from?.id;
             const text = change.value?.message;
             if (!psid || !text) continue;
-            await resumeMessengerFlow({ workspaceId, credentialsId, psid, userMessage: text });
+            await resumeMessengerFlow({ workspaceId, credentialsId, psid, text: text });
           }
         }
         continue;
@@ -45,7 +45,7 @@ export async function POST(
           messaging.message?.quick_reply?.payload ??
           messaging.message?.text;
         if (!psid || !text) continue;
-        await resumeMessengerFlow({ workspaceId, credentialsId, psid, userMessage: text });
+        await resumeMessengerFlow({ workspaceId, credentialsId, psid, text: text });
       }
     }
   });
