@@ -13,7 +13,7 @@
 
 import { decrypt } from "@typebot.io/credentials/decrypt";
 import { resumeMessengerFlow } from "@typebot.io/messenger/resumeMessengerFlow";
-import { prisma } from "@typebot.io/prisma";
+import prisma from "@typebot.io/prisma";
 import crypto from "crypto";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -35,15 +35,16 @@ function verifySignature(
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { workspaceId: string; credentialsId: string } },
+  { params }: { params: Promise<{ workspaceId: string; credentialsId: string }> },
 ) {
   const { searchParams } = new URL(req.url);
   const mode = searchParams.get("hub.mode");
   const token = searchParams.get("hub.verify_token");
   const challenge = searchParams.get("hub.challenge");
 
+  const { workspaceId, credentialsId } = await params;
   const credentials = await prisma.credentials.findFirst({
-    where: { id: params.credentialsId, workspaceId: params.workspaceId },
+    where: { id: credentialsId, workspaceId: workspaceId },
   });
   if (!credentials)
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -61,12 +62,13 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { workspaceId: string; credentialsId: string } },
+  { params }: { params: Promise<{ workspaceId: string; credentialsId: string }> },
 ) {
   const rawBody = await req.text();
+  const { workspaceId, credentialsId } = await params;
 
   const credentials = await prisma.credentials.findFirst({
-    where: { id: params.credentialsId, workspaceId: params.workspaceId },
+    where: { id: credentialsId, workspaceId: workspaceId },
   });
   if (!credentials)
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -160,8 +162,8 @@ async function handleMessagingEvent(
   await resumeMessengerFlow({
     psid,
     pageAccessToken,
-    credentialsId: params.credentialsId,
-    workspaceId: params.workspaceId,
+    credentialsId: credentialsId,
+    workspaceId: workspaceId,
     userMessage: userText,
   });
 }
@@ -215,8 +217,8 @@ async function handleFeedEvent(
   await resumeMessengerFlow({
     psid: commenterPsid,
     pageAccessToken,
-    credentialsId: params.credentialsId,
-    workspaceId: params.workspaceId,
+    credentialsId: credentialsId,
+    workspaceId: workspaceId,
     userMessage: commentText,
   });
 }
