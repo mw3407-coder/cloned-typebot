@@ -11,7 +11,7 @@
 //   - feed (comment triggers) — scaffolded
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { decrypt } from "@typebot.io/lib/encryption/decrypt";
+import { decrypt } from "@typebot.io/credentials/decrypt";
 import { resumeMessengerFlow } from "@typebot.io/messenger/resumeMessengerFlow";
 import { prisma } from "@typebot.io/prisma";
 import crypto from "crypto";
