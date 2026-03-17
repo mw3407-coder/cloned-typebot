@@ -11,18 +11,18 @@
 //   - feed (comment triggers) — scaffolded
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
-import { prisma } from "@typebot.io/prisma";
 import { decrypt } from "@typebot.io/lib/encryption/decrypt";
 import { resumeMessengerFlow } from "@typebot.io/messenger/resumeMessengerFlow";
+import { prisma } from "@typebot.io/prisma";
+import crypto from "crypto";
+import { type NextRequest, NextResponse } from "next/server";
 
 // ── Verify request came from Facebook ────────────────────────────────────────
 
 function verifySignature(
   rawBody: string,
   signature: string | null,
-  appSecret: string
+  appSecret: string,
 ): boolean {
   if (!signature) return false;
   const expected =
@@ -35,7 +35,7 @@ function verifySignature(
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { workspaceId: string; credentialsId: string } }
+  { params }: { params: { workspaceId: string; credentialsId: string } },
 ) {
   const { searchParams } = new URL(req.url);
   const mode = searchParams.get("hub.mode");
@@ -45,7 +45,8 @@ export async function GET(
   const credentials = await prisma.credentials.findFirst({
     where: { id: params.credentialsId, workspaceId: params.workspaceId },
   });
-  if (!credentials) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!credentials)
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const data = await decrypt(credentials.data, credentials.iv);
   const verifyToken = (data as any).verifyToken;
@@ -60,14 +61,15 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { workspaceId: string; credentialsId: string } }
+  { params }: { params: { workspaceId: string; credentialsId: string } },
 ) {
   const rawBody = await req.text();
 
   const credentials = await prisma.credentials.findFirst({
     where: { id: params.credentialsId, workspaceId: params.workspaceId },
   });
-  if (!credentials) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!credentials)
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const data = await decrypt(credentials.data, credentials.iv);
   const { pageAccessToken, appSecret } = data as {
@@ -92,7 +94,6 @@ export async function POST(
   // Process entries in background — return 200 immediately (FB requires it)
   (async () => {
     for (const entry of body.entry ?? []) {
-
       // ── Comment / Feed events ────────────────────────────────────────────
       if (entry.changes) {
         for (const change of entry.changes) {
@@ -118,7 +119,7 @@ export async function POST(
 async function handleMessagingEvent(
   event: any,
   pageAccessToken: string,
-  params: { workspaceId: string; credentialsId: string }
+  params: { workspaceId: string; credentialsId: string },
 ) {
   const psid: string | undefined = event.sender?.id;
   if (!psid) return;
@@ -128,6 +129,7 @@ async function handleMessagingEvent(
 
   // Ignore delivery and read receipts
   if (event.delivery || event.read) return;
+
 
   // ── Determine the text to pass to the bot ─────────────────────────────────
 
@@ -169,7 +171,7 @@ async function handleMessagingEvent(
 async function handleFeedEvent(
   value: any,
   pageAccessToken: string,
-  params: { workspaceId: string; credentialsId: string }
+  params: { workspaceId: string; credentialsId: string },
 ) {
   // Only handle new comments (not post edits, likes, etc.)
   if (value.item !== "comment" || value.verb !== "add") return;
@@ -205,7 +207,7 @@ async function handleFeedEvent(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: randomReply }),
-    }
+    },
   ).catch(console.error);
 
   // ── Send DM to commenter ─────────────────────────────────────────────────
