@@ -100,7 +100,7 @@ export async function POST(
       if (entry.changes) {
         for (const change of entry.changes) {
           if (change.field === "feed") {
-            await handleFeedEvent(change.value, pageAccessToken, params);
+            await handleFeedEvent(change.value, pageAccessToken, { workspaceId, credentialsId });
           }
         }
         continue;
@@ -108,7 +108,7 @@ export async function POST(
 
       // ── Messenger events ─────────────────────────────────────────────────
       for (const event of entry.messaging ?? []) {
-        await handleMessagingEvent(event, pageAccessToken, params);
+        await handleMessagingEvent(event, pageAccessToken, { workspaceId, credentialsId });
       }
     }
   })().catch((err) => console.error("[Messenger] Webhook handler error:", err));
