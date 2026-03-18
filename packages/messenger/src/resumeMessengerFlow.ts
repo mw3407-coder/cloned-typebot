@@ -60,6 +60,15 @@ export const resumeMessengerFlow = async ({
 
   const sessionId = `${MESSENGER_SESSION_ID_PREFIX}${credentialsId}-${psid}`;
 
+  // Distributed lock per PSID — prevents Meta retry duplicates across multiple workers
+  const lockKey = BigInt("0x" + Buffer.from(psid).toString("hex").slice(0, 16));
+  const lockResult = await prisma.$queryRaw<[{pg_try_advisory_lock: boolean}]>`SELECT pg_try_advisory_lock(${lockKey})`;
+  if (!lockResult[0].pg_try_advisory_lock) {
+    console.log("[Messenger] Duplicate — another worker is handling psid:", psid);
+    return;
+  }
+
+
   await withSessionStore(sessionId, async (sessionStore) => {
     const existingSession = await getSession(sessionId);
 
