@@ -17,6 +17,22 @@ import prisma from "@typebot.io/prisma";
 import crypto from "crypto";
 import { type NextRequest, NextResponse } from "next/server";
 
+
+// ── In-memory deduplication cache ────────────────────────────────────────────
+const processedMids = new Map<string, number>();
+const MID_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+function isDuplicate(mid: string): boolean {
+  const now = Date.now();
+  // Clean old entries
+  for (const [key, ts] of processedMids.entries()) {
+    if (now - ts > MID_TTL_MS) processedMids.delete(key);
+  }
+  if (processedMids.has(mid)) return true;
+  processedMids.set(mid, now);
+  return false;
+}
+
 // ── Verify request came from Facebook ────────────────────────────────────────
 
 function verifySignature(
@@ -126,6 +142,10 @@ async function handleMessagingEvent(
   const { workspaceId, credentialsId } = params;
   const psid: string | undefined = event.sender?.id;
   if (!psid) return;
+
+  // Deduplicate by message ID
+  const mid: string | undefined = event.message?.mid ?? event.postback?.mid;
+  if (mid && isDuplicate(mid)) return;
 
   // Ignore echoes (messages sent BY the page)
   if (event.message?.is_echo) return;
