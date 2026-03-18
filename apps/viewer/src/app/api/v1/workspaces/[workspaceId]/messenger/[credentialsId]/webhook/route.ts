@@ -123,6 +123,7 @@ async function handleMessagingEvent(
   pageAccessToken: string,
   params: { workspaceId: string; credentialsId: string },
 ) {
+  const { workspaceId, credentialsId } = params;
   const psid: string | undefined = event.sender?.id;
   if (!psid) return;
 
@@ -174,6 +175,7 @@ async function handleFeedEvent(
   pageAccessToken: string,
   params: { workspaceId: string; credentialsId: string },
 ) {
+  const { workspaceId, credentialsId } = params;
   // Only handle new comments (not post edits, likes, etc.)
   if (value.item !== "comment" || value.verb !== "add") return;
   // Ignore comments by the page itself
