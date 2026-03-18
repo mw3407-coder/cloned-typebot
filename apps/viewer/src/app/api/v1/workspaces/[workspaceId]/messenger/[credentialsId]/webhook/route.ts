@@ -18,19 +18,25 @@ import crypto from "crypto";
 import { type NextRequest, NextResponse } from "next/server";
 
 
-// ── In-memory deduplication cache ────────────────────────────────────────────
-const processedMids = new Map<string, number>();
-const MID_TTL_MS = 5 * 60 * 1000; // 5 minutes
-
-function isDuplicate(mid: string): boolean {
-  const now = Date.now();
-  // Clean old entries
-  for (const [key, ts] of processedMids.entries()) {
-    if (now - ts > MID_TTL_MS) processedMids.delete(key);
+// ── Database-backed deduplication (survives multiple Next.js workers) ────────
+async function isDuplicate(mid: string): Promise<boolean> {
+  try {
+    await prisma.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "ProcessedMid" (
+        "mid" TEXT PRIMARY KEY,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `;
+    await prisma.$executeRaw`
+      DELETE FROM "ProcessedMid" WHERE "createdAt" < NOW() - INTERVAL '5 minutes'
+    `;
+    const inserted = await prisma.$executeRaw`
+      INSERT INTO "ProcessedMid" ("mid") VALUES (${mid}) ON CONFLICT DO NOTHING
+    `;
+    return inserted === 0;
+  } catch {
+    return false;
   }
-  if (processedMids.has(mid)) return true;
-  processedMids.set(mid, now);
-  return false;
 }
 
 // ── Verify request came from Facebook ────────────────────────────────────────
@@ -145,7 +151,7 @@ async function handleMessagingEvent(
 
   // Deduplicate by message ID
   const mid: string | undefined = event.message?.mid ?? event.postback?.mid;
-  if (mid && isDuplicate(mid)) return;
+  if (mid && await isDuplicate(mid)) return;
 
   // Ignore echoes (messages sent BY the page)
   if (event.message?.is_echo) return;

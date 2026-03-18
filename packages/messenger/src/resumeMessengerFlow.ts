@@ -66,13 +66,27 @@ export const resumeMessengerFlow = async ({
     if (existingSession?.state !== undefined && existingSession?.state !== null) {
       const reply = text !== undefined ? { type: "text" as const, text } : undefined;
 
-      const { messages, input, logs, visitedEdges, setVariableHistory, newSessionState } =
-        await continueBotFlow(reply, {
+      let continueResult: Awaited<ReturnType<typeof continueBotFlow>> | null = null;
+      try {
+        continueResult = await continueBotFlow(reply, {
           version: 2,
           sessionStore,
           state: existingSession.state,
           textBubbleContentFormat: "richText",
         });
+      } catch (err) {
+        console.log("[Messenger] Session stuck — resetting for psid:", psid);
+        await prisma.chatSession.delete({ where: { id: sessionId } }).catch(() => {});
+        continueResult = null;
+      }
+
+      // If session was reset, fall through to startSession below
+      if (continueResult === null) {
+        existingSession.state = undefined as any;
+      }
+
+      if (continueResult !== null) {
+      const { messages, input, logs, visitedEdges, setVariableHistory, newSessionState } = continueResult;
 
       let lastMessageText: string | undefined;
       for (const message of messages) {
@@ -107,7 +121,10 @@ export const resumeMessengerFlow = async ({
         visitedEdges,
         setVariableHistory,
       });
-    } else {
+      } // end if (continueResult !== null)
+    }
+    
+    if (!existingSession?.state) {
       const typebotRecord = await prisma.typebot.findFirst({
         where: { workspaceId },
         select: { id: true, publicId: true },
