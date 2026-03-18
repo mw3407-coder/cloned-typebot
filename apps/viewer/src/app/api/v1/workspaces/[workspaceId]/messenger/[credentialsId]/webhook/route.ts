@@ -161,10 +161,9 @@ async function handleMessagingEvent(
 
   await resumeMessengerFlow({
     psid,
-    pageAccessToken,
+    text: userText,
     credentialsId: credentialsId,
     workspaceId: workspaceId,
-    userMessage: userText,
   });
 }
 
@@ -216,9 +215,8 @@ async function handleFeedEvent(
   // Start (or resume) the Messenger flow for this commenter
   await resumeMessengerFlow({
     psid: commenterPsid,
-    pageAccessToken,
+    text: commentText,
     credentialsId: credentialsId,
     workspaceId: workspaceId,
-    userMessage: commentText,
   });
 }
