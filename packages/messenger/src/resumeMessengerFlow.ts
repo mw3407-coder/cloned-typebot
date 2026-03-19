@@ -60,6 +60,19 @@ export const resumeMessengerFlow = async ({
 
   const sessionId = `${MESSENGER_SESSION_ID_PREFIX}${credentialsId}-${psid}`;
 
+  // Atomic dedup: only the worker that successfully inserts the mid processes it
+  const dedupMid = `dedup-${psid}-${Math.floor(Date.now() / 1000)}`;
+  const inserted = await prisma.$executeRaw`
+    INSERT INTO "ProcessedMid" (mid, "createdAt")
+    VALUES (${dedupMid}, NOW())
+    ON CONFLICT DO NOTHING
+  `;
+  if (inserted === 0) {
+    console.log("[Messenger] Duplicate — skipping for psid:", psid);
+    return;
+  }
+
+
   await withSessionStore(sessionId, async (sessionStore) => {
     const existingSession = await getSession(sessionId);
 
