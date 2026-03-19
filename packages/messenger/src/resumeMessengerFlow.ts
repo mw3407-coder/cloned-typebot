@@ -86,7 +86,7 @@ export const resumeMessengerFlow = async ({
       } catch (err) {
         console.log("[Messenger] Session stuck — resetting for psid:", psid);
         await prisma.chatSession.delete({ where: { id: sessionId } }).catch(() => {});
-        continueResult = null;
+        return;
       }
 
       // If session was reset, fall through to startSession below
