@@ -60,22 +60,18 @@ export const resumeMessengerFlow = async ({
 
   const sessionId = `${MESSENGER_SESSION_ID_PREFIX}${credentialsId}-${psid}`;
 
-  // Distributed lock per PSID — prevents Meta retry duplicates across multiple workers
-  const lockKey = BigInt("0x" + Buffer.from(psid).toString("hex").slice(0, 16));
-  const lockResult = await prisma.$queryRaw<[{pg_try_advisory_lock: boolean}]>`SELECT pg_try_advisory_lock(${lockKey})`;
-  if (!lockResult[0].pg_try_advisory_lock) {
-    console.log("[Messenger] Duplicate — another worker is handling psid:", psid);
-    return;
-  }
-
-
   await withSessionStore(sessionId, async (sessionStore) => {
     const existingSession = await getSession(sessionId);
 
-    if (existingSession?.state !== undefined && existingSession?.state !== null) {
-      const reply = text !== undefined ? { type: "text" as const, text } : undefined;
+    if (
+      existingSession?.state !== undefined &&
+      existingSession?.state !== null
+    ) {
+      const reply =
+        text !== undefined ? { type: "text" as const, text } : undefined;
 
-      let continueResult: Awaited<ReturnType<typeof continueBotFlow>> | null = null;
+      let continueResult: Awaited<ReturnType<typeof continueBotFlow>> | null =
+        null;
       try {
         continueResult = await continueBotFlow(reply, {
           version: 2,
@@ -85,7 +81,9 @@ export const resumeMessengerFlow = async ({
         });
       } catch (err) {
         console.log("[Messenger] Session stuck — resetting for psid:", psid);
-        await prisma.chatSession.delete({ where: { id: sessionId } }).catch(() => {});
+        await prisma.chatSession
+          .delete({ where: { id: sessionId } })
+          .catch(() => {});
         return;
       }
 
@@ -95,44 +93,62 @@ export const resumeMessengerFlow = async ({
       }
 
       if (continueResult !== null) {
-      const { messages, input, logs, visitedEdges, setVariableHistory, newSessionState } = continueResult;
+        const {
+          messages,
+          input,
+          logs,
+          visitedEdges,
+          setVariableHistory,
+          newSessionState,
+        } = continueResult;
 
-      let lastMessageText: string | undefined;
-      for (const message of messages) {
-        if (message.type === "text") {
-          const plainText = extractText(message as BotMessage);
-          if (plainText.length > 0) {
-            await sendTypingIndicator(psid, pageAccessToken, plainText.length);
-            await sendMessengerMessage({
-              to: psid,
-              message: { text: plainText },
-              pageAccessToken,
-            });
-            lastMessageText = plainText;
+        let lastMessageText: string | undefined;
+        for (const message of messages) {
+          if (message.type === "text") {
+            const plainText = extractText(message as BotMessage);
+            if (plainText.length > 0) {
+              await sendTypingIndicator(
+                psid,
+                pageAccessToken,
+                plainText.length,
+              );
+              await sendMessengerMessage({
+                to: psid,
+                message: { text: plainText },
+                pageAccessToken,
+              });
+              lastMessageText = plainText;
+            }
           }
         }
-      }
 
-      if (input) {
-        const inputMessage = convertInputToMessengerMessage(input, lastMessageText);
-        if (inputMessage) {
-          await sendTypingIndicator(psid, pageAccessToken, 40);
-          await sendMessengerMessage({ to: psid, message: inputMessage, pageAccessToken });
+        if (input) {
+          const inputMessage = convertInputToMessengerMessage(
+            input,
+            lastMessageText,
+          );
+          if (inputMessage) {
+            await sendTypingIndicator(psid, pageAccessToken, 40);
+            await sendMessengerMessage({
+              to: psid,
+              message: inputMessage,
+              pageAccessToken,
+            });
+          }
         }
-      }
 
-      await saveStateToDatabase({
-        clientSideActions: [],
-        input,
-        logs,
-        sessionId: { type: "new", id: sessionId },
-        session: { state: newSessionState },
-        visitedEdges,
-        setVariableHistory,
-      });
+        await saveStateToDatabase({
+          clientSideActions: [],
+          input,
+          logs,
+          sessionId: { type: "new", id: sessionId },
+          session: { state: newSessionState },
+          visitedEdges,
+          setVariableHistory,
+        });
       } // end if (continueResult !== null)
     }
-    
+
     if (!existingSession?.state) {
       const typebotRecord = await prisma.typebot.findFirst({
         where: { workspaceId },
@@ -149,18 +165,24 @@ export const resumeMessengerFlow = async ({
         return;
       }
 
-      const { messages, input, newSessionState, logs, visitedEdges, setVariableHistory } =
-        await startSession({
-          version: 2,
-          sessionStore,
-          startParams: {
-            type: "live",
-            isOnlyRegistering: false,
-            publicId: typebotRecord.publicId,
-            isStreamEnabled: false,
-            textBubbleContentFormat: "richText",
-          },
-        });
+      const {
+        messages,
+        input,
+        newSessionState,
+        logs,
+        visitedEdges,
+        setVariableHistory,
+      } = await startSession({
+        version: 2,
+        sessionStore,
+        startParams: {
+          type: "live",
+          isOnlyRegistering: false,
+          publicId: typebotRecord.publicId,
+          isStreamEnabled: false,
+          textBubbleContentFormat: "richText",
+        },
+      });
 
       let lastMessageText: string | undefined;
       for (const message of messages) {
@@ -179,14 +201,24 @@ export const resumeMessengerFlow = async ({
       }
 
       if (input) {
-        const inputMessage = convertInputToMessengerMessage(input, lastMessageText);
+        const inputMessage = convertInputToMessengerMessage(
+          input,
+          lastMessageText,
+        );
         if (inputMessage) {
           await sendTypingIndicator(psid, pageAccessToken, 40);
-          await sendMessengerMessage({ to: psid, message: inputMessage, pageAccessToken });
+          await sendMessengerMessage({
+            to: psid,
+            message: inputMessage,
+            pageAccessToken,
+          });
         }
       }
 
-      await upsertSession(sessionId, { state: newSessionState, isReplying: false });
+      await upsertSession(sessionId, {
+        state: newSessionState,
+        isReplying: false,
+      });
 
       await saveStateToDatabase({
         clientSideActions: [],

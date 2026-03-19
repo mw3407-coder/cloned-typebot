@@ -17,28 +17,6 @@ import prisma from "@typebot.io/prisma";
 import crypto from "crypto";
 import { type NextRequest, NextResponse } from "next/server";
 
-
-// ── Database-backed deduplication (survives multiple Next.js workers) ────────
-async function isDuplicate(mid: string): Promise<boolean> {
-  try {
-    await prisma.$executeRaw`
-      CREATE TABLE IF NOT EXISTS "ProcessedMid" (
-        "mid" TEXT PRIMARY KEY,
-        "createdAt" TIMESTAMP NOT NULL DEFAULT NOW()
-      )
-    `;
-    await prisma.$executeRaw`
-      DELETE FROM "ProcessedMid" WHERE "createdAt" < NOW() - INTERVAL '5 minutes'
-    `;
-    const inserted = await prisma.$executeRaw`
-      INSERT INTO "ProcessedMid" ("mid") VALUES (${mid}) ON CONFLICT DO NOTHING
-    `;
-    return inserted === 0;
-  } catch {
-    return false;
-  }
-}
-
 // ── Verify request came from Facebook ────────────────────────────────────────
 
 function verifySignature(
@@ -57,7 +35,9 @@ function verifySignature(
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ workspaceId: string; credentialsId: string }> },
+  {
+    params,
+  }: { params: Promise<{ workspaceId: string; credentialsId: string }> },
 ) {
   const { searchParams } = new URL(req.url);
   const mode = searchParams.get("hub.mode");
@@ -84,7 +64,9 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ workspaceId: string; credentialsId: string }> },
+  {
+    params,
+  }: { params: Promise<{ workspaceId: string; credentialsId: string }> },
 ) {
   const rawBody = await req.text();
   const { workspaceId, credentialsId } = await params;
@@ -122,7 +104,10 @@ export async function POST(
       if (entry.changes) {
         for (const change of entry.changes) {
           if (change.field === "feed") {
-            await handleFeedEvent(change.value, pageAccessToken, { workspaceId, credentialsId });
+            await handleFeedEvent(change.value, pageAccessToken, {
+              workspaceId,
+              credentialsId,
+            });
           }
         }
         continue;
@@ -130,7 +115,10 @@ export async function POST(
 
       // ── Messenger events ─────────────────────────────────────────────────
       for (const event of entry.messaging ?? []) {
-        await handleMessagingEvent(event, pageAccessToken, { workspaceId, credentialsId });
+        await handleMessagingEvent(event, pageAccessToken, {
+          workspaceId,
+          credentialsId,
+        });
       }
     }
   })().catch((err) => console.error("[Messenger] Webhook handler error:", err));
@@ -149,16 +137,26 @@ async function handleMessagingEvent(
   const psid: string | undefined = event.sender?.id;
   if (!psid) return;
 
-  // Deduplicate by message ID
-  const mid: string | undefined = event.message?.mid ?? event.postback?.mid;
-  if (mid && await isDuplicate(mid)) return;
+  // Deduplicate by message ID (atomic INSERT — safe across concurrent workers)
+  const dedupKey =
+    event.message?.mid ??
+    `postback_${psid}_${event.timestamp}_${event.postback?.payload ?? "nopayload"}`;
+
+  const inserted = await prisma.$executeRaw`
+    INSERT INTO "ProcessedMid" (mid, "createdAt")
+    VALUES (${dedupKey}, NOW())
+    ON CONFLICT DO NOTHING
+  `;
+
+  if (inserted === 0) {
+    return NextResponse.json({ status: "duplicate" });
+  }
 
   // Ignore echoes (messages sent BY the page)
   if (event.message?.is_echo) return;
 
   // Ignore delivery and read receipts
   if (event.delivery || event.read) return;
-
 
   // ── Determine the text to pass to the bot ─────────────────────────────────
 
