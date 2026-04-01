@@ -7,7 +7,7 @@ import { decrypt } from "@typebot.io/credentials/decrypt";
 import { getCredentials } from "@typebot.io/credentials/getCredentials";
 import prisma from "@typebot.io/prisma";
 import { withSessionStore } from "@typebot.io/runtime-session-store";
-import { MESSENGER_SESSION_ID_PREFIX } from "./constants";
+import { LOG_PREFIX, MESSENGER_SESSION_ID_PREFIX } from "./constants";
 import { convertInputToMessengerMessage } from "./convertInputToMessengerMessage";
 import { sendMessengerMessage } from "./sendMessengerMessage";
 import { sendTypingIndicator } from "./sendTypingIndicator";
@@ -39,11 +39,14 @@ export const resumeMessengerFlow = async ({
   workspaceId,
   credentialsId,
 }: Props): Promise<void> => {
-  console.log("[Messenger] resumeMessengerFlow start");
+  console.log(`${LOG_PREFIX} resumeMessengerFlow`, { psid, workspaceId });
 
   const encryptedCredentials = await getCredentials(credentialsId, workspaceId);
   if (encryptedCredentials === null) {
-    console.error("Messenger credentials not found", credentialsId);
+    console.error(`${LOG_PREFIX} Messenger credentials not found`, {
+      credentialsId,
+      psid,
+    });
     return;
   }
 
@@ -54,196 +57,194 @@ export const resumeMessengerFlow = async ({
 
   const pageAccessToken = decrypted.pageAccessToken;
   if (pageAccessToken === undefined) {
-    console.error("Page access token missing in credentials");
+    console.error(`${LOG_PREFIX} Page access token missing in credentials`, {
+      psid,
+    });
     return;
   }
 
   const sessionId = `${MESSENGER_SESSION_ID_PREFIX}${credentialsId}-${psid}`;
 
-  // Atomic dedup: only the worker that successfully inserts the mid processes it
-  const dedupMid = `dedup-${psid}-${Math.floor(Date.now() / 1000)}`;
-  const inserted = await prisma.$executeRaw`
-    INSERT INTO "ProcessedMid" (mid, "createdAt")
-    VALUES (${dedupMid}, NOW())
-    ON CONFLICT DO NOTHING
-  `;
-  if (inserted === 0) {
-    console.log("[Messenger] Duplicate — skipping for psid:", psid);
+  const session = await getSession(sessionId);
+
+  if (session?.isReplying) {
+    console.log(`${LOG_PREFIX} Session is already replying, skipping`, {
+      psid,
+    });
     return;
   }
 
+  await upsertSession(sessionId, { isReplying: true });
 
   await withSessionStore(sessionId, async (sessionStore) => {
-    const existingSession = await getSession(sessionId);
-
-    if (
-      existingSession?.state !== undefined &&
-      existingSession?.state !== null
-    ) {
-      const reply =
-        text !== undefined ? { type: "text" as const, text } : undefined;
-
-      let continueResult: Awaited<ReturnType<typeof continueBotFlow>> | null =
-        null;
-      try {
-        continueResult = await continueBotFlow(reply, {
-          version: 2,
-          sessionStore,
-          state: existingSession.state,
-          textBubbleContentFormat: "richText",
-        });
-      } catch (err) {
-        console.log("[Messenger] Session stuck — resetting for psid:", psid);
-        await prisma.chatSession
-          .delete({ where: { id: sessionId } })
-          .catch(() => {});
-        return;
-      }
-
-      // If session was reset, fall through to startSession below
-      if (continueResult === null) {
-        existingSession.state = undefined as any;
-      }
-
-      if (continueResult !== null) {
-        const {
-          messages,
-          input,
-          logs,
-          visitedEdges,
-          setVariableHistory,
-          newSessionState,
-        } = continueResult;
-
-        let lastMessageText: string | undefined;
-        for (const message of messages) {
-          if (message.type === "text") {
-            const plainText = extractText(message as BotMessage);
-            if (plainText.length > 0) {
-              await sendTypingIndicator(
-                psid,
-                pageAccessToken,
-                plainText.length,
-              );
-              await sendMessengerMessage({
-                to: psid,
-                message: { text: plainText },
-                pageAccessToken,
-              });
-              lastMessageText = plainText;
-            }
-          }
-        }
-
-        if (input) {
-          const inputMessage = convertInputToMessengerMessage(
-            input,
-            lastMessageText,
-          );
-          if (inputMessage) {
-            await sendTypingIndicator(psid, pageAccessToken, 40);
-            await sendMessengerMessage({
-              to: psid,
-              message: inputMessage,
-              pageAccessToken,
-            });
-          }
-        }
-
-        await saveStateToDatabase({
-          clientSideActions: [],
-          input,
-          logs,
-          sessionId: { type: "new", id: sessionId },
-          session: { state: newSessionState },
-          visitedEdges,
-          setVariableHistory,
-        });
-      } // end if (continueResult !== null)
-    }
-
-    if (!existingSession?.state) {
-      const typebotRecord = await prisma.typebot.findFirst({
-        where: { workspaceId },
-        select: { id: true, publicId: true },
-      });
-
-      if (typebotRecord === null) {
-        console.error("No typebot found for workspace", workspaceId);
-        return;
-      }
-
-      if (typebotRecord.publicId === null) {
-        console.error("Typebot has no publicId", typebotRecord.id);
-        return;
-      }
-
-      const {
-        messages,
-        input,
-        newSessionState,
-        logs,
-        visitedEdges,
-        setVariableHistory,
-      } = await startSession({
-        version: 2,
+    try {
+      const result = await resumeFlow({
+        state: session?.state,
+        text,
+        workspaceId,
         sessionStore,
-        startParams: {
-          type: "live",
-          isOnlyRegistering: false,
-          publicId: typebotRecord.publicId,
-          isStreamEnabled: false,
-          textBubbleContentFormat: "richText",
-        },
       });
 
-      let lastMessageText: string | undefined;
-      for (const message of messages) {
-        if (message.type === "text") {
-          const plainText = extractText(message as BotMessage);
-          if (plainText.length > 0) {
-            await sendTypingIndicator(psid, pageAccessToken, plainText.length);
-            await sendMessengerMessage({
-              to: psid,
-              message: { text: plainText },
-              pageAccessToken,
-            });
-            lastMessageText = plainText;
-          }
-        }
-      }
-
-      if (input) {
-        const inputMessage = convertInputToMessengerMessage(
-          input,
-          lastMessageText,
+      if (result === null) {
+        console.warn(
+          `${LOG_PREFIX} resumeFlow returned null, restarting session`,
+          { psid },
         );
-        if (inputMessage) {
-          await sendTypingIndicator(psid, pageAccessToken, 40);
-          await sendMessengerMessage({
-            to: psid,
-            message: inputMessage,
-            pageAccessToken,
-          });
-        }
+        const startResult = await startNewSession({
+          workspaceId,
+          sessionStore,
+        });
+        await processFlowResult({
+          psid,
+          pageAccessToken,
+          sessionId,
+          result: startResult,
+        });
+        return;
       }
 
-      await upsertSession(sessionId, {
-        state: newSessionState,
-        isReplying: false,
+      await processFlowResult({
+        psid,
+        pageAccessToken,
+        sessionId,
+        result,
       });
-
-      await saveStateToDatabase({
-        clientSideActions: [],
-        input,
-        logs,
-        sessionId: { type: "existing", id: sessionId },
-        session: { state: newSessionState },
-        visitedEdges,
-        setVariableHistory,
+    } catch (err) {
+      console.error(`${LOG_PREFIX} Error in resumeMessengerFlow execution`, {
+        psid,
+        err,
+      });
+      await prisma.chatSession
+        .delete({ where: { id: sessionId } })
+        .catch(() => {});
+      await sendMessengerMessage({
+        to: psid,
+        message: { text: "Sorry, something went wrong. Please try again." },
+        pageAccessToken,
       });
     }
   }).catch((err) => {
-    console.error("[Messenger] withSessionStore threw:", err);
+    console.error(`${LOG_PREFIX} withSessionStore threw:`, { psid, err });
   });
+};
+
+const resumeFlow = async ({
+  state,
+  text,
+  workspaceId,
+  sessionStore,
+}: {
+  state: any;
+  text: string | undefined;
+  workspaceId: string;
+  sessionStore: any;
+}) => {
+  if (state) {
+    const reply =
+      text !== undefined ? { type: "text" as const, text } : undefined;
+    return continueBotFlow(reply, {
+      version: 2,
+      sessionStore,
+      state,
+      textBubbleContentFormat: "richText",
+    });
+  }
+
+  return startNewSession({ workspaceId, sessionStore });
+};
+
+const startNewSession = async ({
+  workspaceId,
+  sessionStore,
+}: {
+  workspaceId: string;
+  sessionStore: any;
+}) => {
+  const typebotRecord = await prisma.typebot.findFirst({
+    where: { workspaceId },
+    select: { id: true, publicId: true },
+  });
+
+  if (typebotRecord === null) {
+    throw new Error(`No typebot found for workspace ${workspaceId}`);
+  }
+
+  if (typebotRecord.publicId === null) {
+    throw new Error(`Typebot has no publicId ${typebotRecord.id}`);
+  }
+
+  return startSession({
+    version: 2,
+    sessionStore,
+    startParams: {
+      type: "live",
+      isOnlyRegistering: false,
+      publicId: typebotRecord.publicId,
+      isStreamEnabled: false,
+      textBubbleContentFormat: "richText",
+    },
+  });
+};
+
+const processFlowResult = async ({
+  psid,
+  pageAccessToken,
+  sessionId,
+  result,
+}: {
+  psid: string;
+  pageAccessToken: string;
+  sessionId: string;
+  result: Awaited<ReturnType<typeof continueBotFlow>>;
+}) => {
+  if (result === null) return;
+  const {
+    messages,
+    input,
+    newSessionState,
+    logs,
+    visitedEdges,
+    setVariableHistory,
+  } = result;
+
+  let lastMessageText: string | undefined;
+  for (const message of messages) {
+    if (message.type === "text") {
+      const plainText = extractText(message as BotMessage);
+      if (plainText.length > 0) {
+        await sendTypingIndicator(psid, pageAccessToken, plainText.length);
+        await sendMessengerMessage({
+          to: psid,
+          message: { text: plainText },
+          pageAccessToken,
+        });
+        lastMessageText = plainText;
+      }
+    }
+  }
+
+  if (input) {
+    const inputMessage = convertInputToMessengerMessage(input, lastMessageText);
+    if (inputMessage) {
+      await sendTypingIndicator(psid, pageAccessToken, 40);
+      await sendMessengerMessage({
+        to: psid,
+        message: inputMessage,
+        pageAccessToken,
+      });
+    }
+  }
+
+  await saveStateToDatabase({
+    clientSideActions: [],
+    input,
+    logs,
+    sessionId: { type: "existing", id: sessionId },
+    session: { state: newSessionState },
+    isWaitingForExternalEvent: false,
+    visitedEdges,
+    setVariableHistory,
+  });
+
+  await upsertSession(sessionId, { isReplying: false });
 };
