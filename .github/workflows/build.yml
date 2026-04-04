@@ -1,10 +1,8 @@
 name: Build Typebot
-
 on:
   push:
     branches: [main]
-  workflow_dispatch:  # Allows manual trigger
-
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -35,7 +33,7 @@ jobs:
           cp .env apps/builder/.env
           cp .env apps/viewer/.env
           wc -l .env
-
+      
       - name: Build Typebot (Builder + Viewer)
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
@@ -70,7 +68,6 @@ jobs:
         run: |
           docker push ghcr.io/${{ github.repository }}/typebot-viewer:latest
       
-      - name: Build Complete
       - name: Deploy to Server
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -83,6 +80,6 @@ jobs:
             docker compose pull
             docker compose up -d --force-recreate
             docker image prune -f
-
+      
       - name: Build Complete
         run: echo "✅ Typebot build complete! Images pushed to GHCR"
