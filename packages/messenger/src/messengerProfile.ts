@@ -6,6 +6,7 @@
 // Call these ONCE when setting up a new Facebook Page — not per message.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { LOG_PREFIX } from "./constants";
 import type { Button } from "./messengerTypes";
 
 const FB_API_VERSION = "v19.0";
@@ -36,7 +37,8 @@ type MenuCallToAction = {
  */
 export async function setMessengerPersistentMenu(
   items: MenuCallToAction[],
-  pageAccessToken: string
+  pageAccessToken: string,
+  psid?: string
 ): Promise<void> {
   const res = await fetch(`${PROFILE_URL}?access_token=${pageAccessToken}`, {
     method: "POST",
@@ -54,7 +56,7 @@ export async function setMessengerPersistentMenu(
 
   const data = await res.json();
   if (!res.ok) throw new Error(`Persistent menu error: ${JSON.stringify(data)}`);
-  console.log("[Messenger] Persistent menu set:", data);
+  console.log(`${LOG_PREFIX} Persistent menu set:`, { psid, data });
 }
 
 // ── Get Started Button ────────────────────────────────────────────────────────
@@ -69,7 +71,8 @@ export async function setMessengerPersistentMenu(
  */
 export async function setGetStartedButton(
   payload: string,
-  pageAccessToken: string
+  pageAccessToken: string,
+  psid?: string
 ): Promise<void> {
   const res = await fetch(`${PROFILE_URL}?access_token=${pageAccessToken}`, {
     method: "POST",
@@ -81,7 +84,7 @@ export async function setGetStartedButton(
 
   const data = await res.json();
   if (!res.ok) throw new Error(`Get started button error: ${JSON.stringify(data)}`);
-  console.log("[Messenger] Get Started button set:", data);
+  console.log(`${LOG_PREFIX} Get Started button set:`, { psid, data });
 }
 
 // ── Greeting Text ─────────────────────────────────────────────────────────────
@@ -98,7 +101,8 @@ export async function setGetStartedButton(
  */
 export async function setGreetingText(
   text: string,
-  pageAccessToken: string
+  pageAccessToken: string,
+  psid?: string
 ): Promise<void> {
   const res = await fetch(`${PROFILE_URL}?access_token=${pageAccessToken}`, {
     method: "POST",
@@ -112,7 +116,7 @@ export async function setGreetingText(
 
   const data = await res.json();
   if (!res.ok) throw new Error(`Greeting text error: ${JSON.stringify(data)}`);
-  console.log("[Messenger] Greeting text set:", data);
+  console.log(`${LOG_PREFIX} Greeting text set:`, { psid, data });
 }
 
 // ── Delete Profile Fields ─────────────────────────────────────────────────────
@@ -125,7 +129,8 @@ export async function setGreetingText(
  */
 export async function deleteMessengerProfileFields(
   fields: Array<"persistent_menu" | "get_started" | "greeting">,
-  pageAccessToken: string
+  pageAccessToken: string,
+  psid?: string
 ): Promise<void> {
   const res = await fetch(`${PROFILE_URL}?access_token=${pageAccessToken}`, {
     method: "DELETE",
@@ -135,5 +140,5 @@ export async function deleteMessengerProfileFields(
 
   const data = await res.json();
   if (!res.ok) throw new Error(`Delete profile error: ${JSON.stringify(data)}`);
-  console.log("[Messenger] Profile fields deleted:", data);
+  console.log(`${LOG_PREFIX} Profile fields deleted:`, { psid, data });
 }

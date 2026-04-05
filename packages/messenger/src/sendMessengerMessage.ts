@@ -2,6 +2,7 @@
 // packages/messenger/src/sendMessengerMessage.ts
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { LOG_PREFIX } from "./constants";
 import type { MessengerMessage } from "./messengerTypes";
 
 const FB_API_VERSION = "v19.0";
@@ -33,7 +34,7 @@ export async function sendMessengerMessage({
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    console.error("[Messenger] Send failed:", JSON.stringify(err));
+    console.error(`${LOG_PREFIX} Send failed:`, { psid: to, err });
     throw new Error(
       `Facebook Send API error ${res.status}: ${JSON.stringify(err)}`
     );

@@ -138,18 +138,17 @@ async function handleMessagingEvent(
   if (!psid) return;
 
   // Deduplicate by message ID (atomic INSERT — safe across concurrent workers)
-  const dedupKey =
-    event.message?.mid ??
-    `postback_${psid}_${event.timestamp}_${event.postback?.payload ?? "nopayload"}`;
+  const mid = event.message?.mid;
 
-  const inserted = await prisma.$executeRaw`
-    INSERT INTO "ProcessedMid" (mid, "createdAt")
-    VALUES (${dedupKey}, NOW())
-    ON CONFLICT DO NOTHING
-  `;
-
-  if (inserted === 0) {
-    return NextResponse.json({ status: "duplicate" });
+  if (mid) {
+    try {
+      await prisma.processedMessengerMessage.create({
+        data: { mid },
+      });
+    } catch (err) {
+      // Duplicate mid (P2002) - skip silently
+      return;
+    }
   }
 
   // Ignore echoes (messages sent BY the page)
