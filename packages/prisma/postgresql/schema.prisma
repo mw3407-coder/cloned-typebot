@@ -463,3 +463,9 @@ enum CollaborationType {
   WRITE
   FULL_ACCESS
 }
+
+model ProcessedMessengerMessage {
+  id        String   @id @default(cuid())
+  mid       String   @unique
+  createdAt DateTime @default(now())
+}

@@ -206,7 +206,7 @@ const processFlowResult = async ({
   } = result;
 
   if (messages.length === 0) {
-    console.warn("[FBM] Flow returned no messages for psid:", psid);
+    console.warn(`${LOG_PREFIX} Flow returned no messages for psid:`, psid);
     await upsertSession(sessionId, { isReplying: false });
     return;
   }
