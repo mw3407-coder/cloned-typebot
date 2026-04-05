@@ -14,8 +14,8 @@ import type {
  * Converts a Typebot InputBlock into the correct Facebook Messenger message.
  *
  * Mapping:
- *  CHOICE  ≤ 3 options  → Button Template  (large inline buttons)
- *  CHOICE  4–13 options → Quick Replies     (dismissible chip row)
+ *  CHOICE  ≤ 13 options → Quick Replies     (dismissible chip row)
+ *  CHOICE  > 13 options → Numbered text list
  *  EMAIL                → text + user_email  bubble
  *  PHONE                → text + user_phone_number bubble
  *  NUMBER / TEXT / URL  → plain text prompt (user types freely)
@@ -23,7 +23,7 @@ import type {
  *
  * @param input          The Typebot input block
  * @param promptText     The last text bubble shown before this input (used as
- *                       the button-template prompt or quick-reply prompt)
+ *                       the quick-reply prompt)
  * @returns              A MessengerMessage ready to POST, or null to skip
  */
 export function convertInputToMessengerMessage(
@@ -34,45 +34,39 @@ export function convertInputToMessengerMessage(
 
   // ── Choice / Multiple Choice ──────────────────────────────────────────────
   if (input.type === InputBlockType.CHOICE) {
-    const items: Array<{ content?: string }> =
-      (input as any)?.items ?? (input.options as any)?.items ?? [];
+    const choiceInput = input as any;
+    const items: any[] = choiceInput.items ?? [];
+    const isMultipleChoice = choiceInput.options?.isMultipleChoice ?? false;
 
     if (items.length === 0) return null;
 
-    // Extract labels, truncate to Facebook's 20-char limit
-    const labels = items
-      .map((item) => String(item.content ?? "").trim())
-      .filter(Boolean)
-      .slice(0, 13);
-
-    if (labels.length === 0) return null;
-
-    // ≤ 3 items → Button Template (renders as large persistent buttons)
-    if (labels.length <= 3) {
-      const buttons: Button[] = labels.map((label) => ({
-        type: "postback" as const,
-        title: label.slice(0, 20),
-        payload: label,
-      }));
-
+    // Fallback to numbered list if multiple choice or > 13 items
+    if (isMultipleChoice || items.length > 13) {
+      const listText = items
+        .map((item, index) => `${index + 1}. ${item.content ?? ""}`)
+        .join("\n");
       return {
-        attachment: {
-          type: "template",
-          payload: {
-            template_type: "button",
-            text: prompt,
-            buttons,
-          },
-        },
+        text: `${prompt}\n\n${listText}`.slice(0, 2000),
       };
     }
 
-    // 4–13 items → Quick Replies (chip row below input)
-    const quickReplies: QuickReply[] = labels.map((label) => ({
-      content_type: "text" as const,
-      title: label.slice(0, 20),
-      payload: label,
-    }));
+    // Standard Quick Replies for single choice (1-13 items)
+    const quickReplies: QuickReply[] = items
+      .map((item) => {
+        const title = String(item.content ?? "").trim();
+        const payload = String(item.value ?? item.content ?? "").trim();
+
+        if (!title) return null;
+
+        return {
+          content_type: "text" as const,
+          title: title.slice(0, 20),
+          payload,
+        };
+      })
+      .filter((qr): qr is QuickReply => qr !== null);
+
+    if (quickReplies.length === 0) return null;
 
     return {
       text: prompt,
