@@ -76,8 +76,8 @@ export const resumeMessengerFlow = async ({
 
   await upsertSession(sessionId, { isReplying: true });
 
-  await withSessionStore(sessionId, async (sessionStore) => {
-    try {
+  try {
+    await withSessionStore(sessionId, async (sessionStore) => {
       const result = await resumeFlow({
         state: session?.state,
         text,
@@ -109,23 +109,21 @@ export const resumeMessengerFlow = async ({
         sessionId,
         result,
       });
-    } catch (err) {
-      console.error(`${LOG_PREFIX} Error in resumeMessengerFlow execution`, {
-        psid,
-        err,
-      });
-      await prisma.chatSession
-        .delete({ where: { id: sessionId } })
-        .catch(() => {});
-      await sendMessengerMessage({
-        to: psid,
-        message: { text: "Sorry, something went wrong. Please try again." },
-        pageAccessToken,
-      });
-    }
-  }).catch((err) => {
-    console.error(`${LOG_PREFIX} withSessionStore threw:`, { psid, err });
-  });
+    });
+  } catch (err) {
+    console.error(`${LOG_PREFIX} Error in resumeMessengerFlow execution`, {
+      psid,
+      err,
+    });
+    await prisma.chatSession
+      .delete({ where: { id: sessionId } })
+      .catch(() => {});
+    await sendMessengerMessage({
+      to: psid,
+      message: { text: "Sorry, something went wrong. Please try again." },
+      pageAccessToken,
+    });
+  }
 };
 
 const resumeFlow = async ({
@@ -206,6 +204,12 @@ const processFlowResult = async ({
     visitedEdges,
     setVariableHistory,
   } = result;
+
+  if (messages.length === 0) {
+    console.warn("[FBM] Flow returned no messages for psid:", psid);
+    await upsertSession(sessionId, { isReplying: false });
+    return;
+  }
 
   let lastMessageText: string | undefined;
   for (const message of messages) {
