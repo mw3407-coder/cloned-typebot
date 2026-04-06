@@ -1,6 +1,12 @@
 import { edgeSchema } from "./schemas/edge";
 
 export const preprocessTypebot = (typebot: any) => {
+  if (typebot) {
+    if (typebot.whatsAppCredentialsId === undefined)
+      typebot.whatsAppCredentialsId = null;
+    if (typebot.messengerCredentialsId === undefined)
+      typebot.messengerCredentialsId = null;
+  }
   if (!typebot || Number(typebot.version) >= 5) return typebot;
   return {
     ...typebot,

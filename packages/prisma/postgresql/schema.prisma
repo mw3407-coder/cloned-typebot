@@ -216,6 +216,7 @@ model Typebot {
   isArchived              Boolean                   @default(false)
   isClosed                Boolean                   @default(false)
   whatsAppCredentialsId   String?
+  messengerCredentialsId  String?
   riskLevel               Int?
   bannedIps               BannedIp[]
 

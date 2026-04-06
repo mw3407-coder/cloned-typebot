@@ -30,7 +30,8 @@ export const handleMessengerIncomingMessage = ({
         const text =
           messaging.message?.quick_reply?.payload ??
           messaging.message?.text ??
-          messaging.postback?.payload;
+          messaging.postback?.payload ??
+          messaging.postback?.title;
         console.log(`${LOG_PREFIX} Processing message`, { psid, text });
         try {
           const result = await resumeMessengerFlow({

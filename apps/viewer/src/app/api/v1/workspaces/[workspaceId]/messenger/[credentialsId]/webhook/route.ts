@@ -162,8 +162,8 @@ async function handleMessagingEvent(
   let userText: string | null = null;
 
   // 1. Postback (button template tap, persistent menu tap, Get Started tap)
-  if (event.postback?.payload) {
-    userText = event.postback.payload;
+  if (event.postback) {
+    userText = event.postback.payload ?? event.postback.title;
   }
 
   // 2. Quick reply (chip tap — also has message.text set to the title)

@@ -63,5 +63,8 @@
     "prisma",
     "sharp",
     "inngest-cli"
-  ]
+  ],
+  "dependencies": {
+    "prisma": "7.6.0"
+  }
 }

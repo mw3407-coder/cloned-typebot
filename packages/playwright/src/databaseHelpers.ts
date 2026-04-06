@@ -28,6 +28,7 @@ export const parseTestTypebot = (
   isClosed: false,
   resultsTablePreferences: null,
   whatsAppCredentialsId: null,
+  messengerCredentialsId: null,
   riskLevel: null,
   events: [
     {
