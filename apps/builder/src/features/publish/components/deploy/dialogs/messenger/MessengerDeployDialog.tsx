@@ -10,10 +10,11 @@ import type { JSX } from "react";
 import { CredentialsDropdown } from "@/features/credentials/components/CredentialsDropdown";
 import { useTypebot } from "@/features/editor/providers/TypebotProvider";
 import { useWorkspace } from "@/features/workspace/WorkspaceProvider";
-import { PublishButton } from "../../PublishButton";
+import { PublishButton } from "../../../PublishButton";
 import type { DialogProps } from "../../DeployButton";
 import { MessengerCredentialsDialog } from "./MessengerCredentialsDialog";
 import { PersistentMenuSettings } from "@/features/messengerSettings/components/PersistentMenuSettings";
+import { IcebreakerSettings } from "@/features/messengerSettings/components/IcebreakerSettings";
 
 export const MessengerDeployDialog = ({
   isOpen,
@@ -68,6 +69,21 @@ export const MessengerDeployDialog = ({
     });
   };
 
+  const handleIcebreakersSave = (icebreakers: any[]) => {
+    if (!typebot) return;
+    updateTypebot({
+      updates: {
+        settings: {
+          ...typebot.settings,
+          messenger: {
+            ...typebot.settings.messenger,
+            icebreakers,
+          },
+        },
+      },
+    });
+  };
+
   return (
     <Dialog.Root isOpen={isOpen} onClose={onClose}>
       <Dialog.Popup className="max-w-xl">
@@ -111,7 +127,7 @@ export const MessengerDeployDialog = ({
             <>
               <li>
                 <Accordion.Root>
-                  <Accordion.Item>
+                  <Accordion.Item value="persistent-menu">
                     <Accordion.Trigger>Configure Persistent Menu</Accordion.Trigger>
                     <Accordion.Panel>
                       <PersistentMenuSettings
@@ -119,6 +135,19 @@ export const MessengerDeployDialog = ({
                         workspaceId={workspace?.id ?? ""}
                         initialMenuItems={messengerSettings?.persistentMenu}
                         onSave={handlePersistentMenuSave}
+                      />
+                    </Accordion.Panel>
+                  </Accordion.Item>
+                  <Accordion.Item value="icebreakers">
+                    <Accordion.Trigger>
+                      Configure Conversation Starters
+                    </Accordion.Trigger>
+                    <Accordion.Panel>
+                      <IcebreakerSettings
+                        credentialsId={typebot.messengerCredentialsId}
+                        workspaceId={workspace?.id ?? ""}
+                        initialIcebreakers={messengerSettings?.icebreakers}
+                        onSave={handleIcebreakersSave}
                       />
                     </Accordion.Panel>
                   </Accordion.Item>

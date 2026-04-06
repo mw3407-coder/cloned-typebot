@@ -120,7 +120,6 @@ export const MessengerCredentialsDialog = ({
           <Button
             onClick={createCredentials}
             disabled={isEmpty(name) || isEmpty(pageAccessToken) || isCreating}
-            loading={isCreating}
           >
             Connect Account
           </Button>

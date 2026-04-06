@@ -92,6 +92,15 @@ export const messengerSettingsSchema = z.object({
     )
     .max(3)
     .optional(),
+  icebreakers: z
+    .array(
+      z.object({
+        question: z.string().max(80),
+        payload: z.string(),
+      }),
+    )
+    .max(4)
+    .optional(),
 });
 
 export const settingsSchema = z.object({

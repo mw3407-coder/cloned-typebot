@@ -2,8 +2,8 @@ import { Button } from "@typebot.io/ui/components/Button";
 import { Field } from "@typebot.io/ui/components/Field";
 import { Input } from "@typebot.io/ui/components/Input";
 import { Select } from "@typebot.io/ui/components/Select";
-import { Trash01Icon } from "@typebot.io/ui/icons/Trash01Icon";
-import { PlusIcon } from "@typebot.io/ui/icons/PlusIcon";
+import { TrashIcon } from "@typebot.io/ui/icons/TrashIcon";
+import { PlusSignIcon } from "@typebot.io/ui/icons/PlusSignIcon";
 import { useState } from "react";
 import { toast } from "@/lib/toast";
 
@@ -64,14 +64,14 @@ export const PersistentMenuSettings = ({
       toast({
         title: "Success",
         description: "Persistent menu pushed to Messenger",
-        variant: "success",
+        type: "success",
       });
       onSave(menuItems);
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "error",
+        type: "error",
       });
     } finally {
       setIsSaving(false);
@@ -95,7 +95,7 @@ export const PersistentMenuSettings = ({
             className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
             onClick={() => handleRemoveItem(index)}
           >
-            <Trash01Icon className="size-4" />
+            <TrashIcon className="size-4" />
           </Button>
 
           <Field.Root>
@@ -159,7 +159,7 @@ export const PersistentMenuSettings = ({
           className="w-full flex items-center gap-2"
           onClick={handleAddItem}
         >
-          <PlusIcon className="size-4" />
+          <PlusSignIcon className="size-4" />
           Add Menu Item
         </Button>
       )}
@@ -168,7 +168,6 @@ export const PersistentMenuSettings = ({
         className="w-full"
         onClick={handleSave}
         disabled={isSaving || menuItems.length === 0}
-        loading={isSaving}
       >
         Save & Push to Messenger
       </Button>
