@@ -40,7 +40,17 @@ export const MessengerPreviewInstructions = ({
   };
 
   return (
-    <div className={cn("flex flex-col gap-4 overflow-y-auto w-full px-1", className)}>
+    <div
+      className={cn("flex flex-col gap-4 overflow-y-auto w-full px-1", className)}
+    >
+      <div className="flex flex-col gap-2">
+        <p className="text-sm font-medium">Instructions:</p>
+        <p className="text-sm text-gray-600">
+          Open Messenger on your phone, find your Facebook Page, send any
+          message, and the bot will respond.
+        </p>
+      </div>
+      <hr />
       <Field.Root>
         <Field.Label>Your Messenger PSID</Field.Label>
         <Input
