@@ -79,11 +79,27 @@ export const whatsAppSettingsSchema = z.object({
   errorAndMarketingStatusWebhookForwardUrl: z.string().url().optional(),
 });
 
+export const messengerSettingsSchema = z.object({
+  isEnabled: z.boolean().optional(),
+  persistentMenu: z
+    .array(
+      z.object({
+        title: z.string().max(30),
+        type: z.enum(["postback", "web_url"]),
+        payload: z.string().optional(),
+        url: z.string().url().optional(),
+      }),
+    )
+    .max(3)
+    .optional(),
+});
+
 export const settingsSchema = z.object({
   general: generalSettings.optional(),
   typingEmulation: typingEmulation.optional(),
   metadata: metadataSchema.optional(),
   whatsApp: whatsAppSettingsSchema.optional(),
+  messenger: messengerSettingsSchema.optional(),
   publicShare: z
     .object({
       isEnabled: z.boolean().optional(),
