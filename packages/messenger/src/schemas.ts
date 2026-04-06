@@ -14,6 +14,11 @@ export const messengerWebhookRequestBodySchema = z.object({
             .object({
               mid: z.string(),
               text: z.string().optional(),
+              quick_reply: z
+                .object({
+                  payload: z.string(),
+                })
+                .optional(),
             })
             .optional(),
           postback: z

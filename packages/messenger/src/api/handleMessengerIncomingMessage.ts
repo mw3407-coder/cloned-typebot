@@ -27,7 +27,10 @@ export const handleMessengerIncomingMessage = ({
     for (const e of entry) {
       for (const messaging of e.messaging) {
         const psid = messaging.sender.id;
-        const text = messaging.message?.text ?? messaging.postback?.payload;
+        const text =
+          messaging.message?.quick_reply?.payload ??
+          messaging.message?.text ??
+          messaging.postback?.payload;
         console.log(`${LOG_PREFIX} Processing message`, { psid, text });
         try {
           const result = await resumeMessengerFlow({
