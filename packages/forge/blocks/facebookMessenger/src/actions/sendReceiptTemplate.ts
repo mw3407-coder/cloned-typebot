@@ -2,7 +2,9 @@ import { createAction, option } from "@typebot.io/forge";
 import { auth } from "../auth";
 
 const orderItemSchema = option.object({
-  title: option.string.meta({ layout: { label: "Item Title", isRequired: true } }),
+  title: option.string.meta({
+    layout: { label: "Item Title", isRequired: true },
+  }),
   subtitle: option.string.meta({ layout: { label: "Item Subtitle" } }),
   quantity: option.string.meta({ layout: { label: "Quantity" } }),
   price: option.string.meta({ layout: { label: "Price", isRequired: true } }),
@@ -21,7 +23,11 @@ export const sendReceiptTemplate = createAction({
       layout: { label: "Recipient Name", isRequired: true },
     }),
     orderNumber: option.string.meta({
-      layout: { label: "Order Number", isRequired: true, helperText: "Must be unique per page." },
+      layout: {
+        label: "Order Number",
+        isRequired: true,
+        helperText: "Must be unique per page.",
+      },
     }),
     currency: option.string.meta({
       layout: { label: "Currency (e.g. USD)", isRequired: true },
@@ -35,14 +41,18 @@ export const sendReceiptTemplate = createAction({
     city: option.string.meta({ layout: { label: "City" } }),
     state: option.string.meta({ layout: { label: "State/Province" } }),
     postalCode: option.string.meta({ layout: { label: "Postal Code" } }),
-    country: option.string.meta({ layout: { label: "Country (2-letter ISO)" } }),
+    country: option.string.meta({
+      layout: { label: "Country (2-letter ISO)" },
+    }),
     items: option.array(orderItemSchema).meta({
       layout: { label: "Order Items", itemLabel: "item" },
     }),
     subtotal: option.string.meta({ layout: { label: "Subtotal" } }),
     shippingCost: option.string.meta({ layout: { label: "Shipping Cost" } }),
     totalTax: option.string.meta({ layout: { label: "Tax" } }),
-    totalCost: option.string.meta({ layout: { label: "Total Cost", isRequired: true } }),
+    totalCost: option.string.meta({
+      layout: { label: "Total Cost", isRequired: true },
+    }),
     responseMapping: option.saveResponseArray(["Response"]).meta({
       layout: { accordion: "Save response" },
     }),

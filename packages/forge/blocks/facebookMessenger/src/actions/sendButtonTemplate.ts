@@ -5,13 +5,17 @@ const buttonSchema = option.object({
   type: option.enum(["web_url", "postback", "phone_number"] as const).meta({
     layout: { label: "Button Type", isRequired: true },
   }),
-  title: option.string.meta({ layout: { label: "Button Title", isRequired: true } }),
+  title: option.string.meta({
+    layout: { label: "Button Title", isRequired: true },
+  }),
   url: option.string.meta({ layout: { label: "URL (for web_url)" } }),
   webviewHeightRatio: option.enum(["compact", "tall", "full"] as const).meta({
     layout: { label: "Webview Height (for web_url)" },
   }),
   payload: option.string.meta({ layout: { label: "Payload (for postback)" } }),
-  phoneNumber: option.string.meta({ layout: { label: "Phone Number (for phone_number)" } }),
+  phoneNumber: option.string.meta({
+    layout: { label: "Phone Number (for phone_number)" },
+  }),
 });
 
 export const sendButtonTemplate = createAction({

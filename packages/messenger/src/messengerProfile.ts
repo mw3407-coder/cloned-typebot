@@ -7,7 +7,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { LOG_PREFIX } from "./constants";
-import type { Button } from "./messengerTypes";
 
 const FB_API_VERSION = "v19.0";
 const PROFILE_URL = `https://graph.facebook.com/${FB_API_VERSION}/me/messenger_profile`;
@@ -17,8 +16,8 @@ const PROFILE_URL = `https://graph.facebook.com/${FB_API_VERSION}/me/messenger_p
 type MenuCallToAction = {
   type: "postback" | "web_url";
   title: string;
-  payload?: string;   // for postback
-  url?: string;       // for web_url
+  payload?: string; // for postback
+  url?: string; // for web_url
 };
 
 /**
@@ -38,7 +37,7 @@ type MenuCallToAction = {
 export async function setMessengerPersistentMenu(
   items: MenuCallToAction[],
   pageAccessToken: string,
-  psid?: string
+  psid?: string,
 ): Promise<void> {
   const res = await fetch(`${PROFILE_URL}?access_token=${pageAccessToken}`, {
     method: "POST",
@@ -55,7 +54,8 @@ export async function setMessengerPersistentMenu(
   });
 
   const data = await res.json();
-  if (!res.ok) throw new Error(`Persistent menu error: ${JSON.stringify(data)}`);
+  if (!res.ok)
+    throw new Error(`Persistent menu error: ${JSON.stringify(data)}`);
   console.log(`${LOG_PREFIX} Persistent menu set:`, { psid, data });
 }
 
@@ -72,7 +72,7 @@ export async function setMessengerPersistentMenu(
 export async function setGetStartedButton(
   payload: string,
   pageAccessToken: string,
-  psid?: string
+  psid?: string,
 ): Promise<void> {
   const res = await fetch(`${PROFILE_URL}?access_token=${pageAccessToken}`, {
     method: "POST",
@@ -83,7 +83,8 @@ export async function setGetStartedButton(
   });
 
   const data = await res.json();
-  if (!res.ok) throw new Error(`Get started button error: ${JSON.stringify(data)}`);
+  if (!res.ok)
+    throw new Error(`Get started button error: ${JSON.stringify(data)}`);
   console.log(`${LOG_PREFIX} Get Started button set:`, { psid, data });
 }
 
@@ -102,15 +103,13 @@ export async function setGetStartedButton(
 export async function setGreetingText(
   text: string,
   pageAccessToken: string,
-  psid?: string
+  psid?: string,
 ): Promise<void> {
   const res = await fetch(`${PROFILE_URL}?access_token=${pageAccessToken}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      greeting: [
-        { locale: "default", text: text.slice(0, 160) },
-      ],
+      greeting: [{ locale: "default", text: text.slice(0, 160) }],
     }),
   });
 
@@ -130,7 +129,7 @@ export async function setGreetingText(
 export async function deleteMessengerProfileFields(
   fields: Array<"persistent_menu" | "get_started" | "greeting">,
   pageAccessToken: string,
-  psid?: string
+  psid?: string,
 ): Promise<void> {
   const res = await fetch(`${PROFILE_URL}?access_token=${pageAccessToken}`, {
     method: "DELETE",

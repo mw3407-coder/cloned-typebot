@@ -1,8 +1,8 @@
 import { Button } from "@typebot.io/ui/components/Button";
 import { Field } from "@typebot.io/ui/components/Field";
 import { Input } from "@typebot.io/ui/components/Input";
-import { TrashIcon } from "@typebot.io/ui/icons/TrashIcon";
 import { PlusSignIcon } from "@typebot.io/ui/icons/PlusSignIcon";
+import { TrashIcon } from "@typebot.io/ui/icons/TrashIcon";
 import { useState } from "react";
 import { toast } from "@/lib/toast";
 
@@ -25,7 +25,7 @@ export const IcebreakerSettings = ({
   onSave,
 }: Props) => {
   const [icebreakers, setIcebreakers] = useState<Icebreaker[]>(
-    initialIcebreakers.length > 0 ? initialIcebreakers : []
+    initialIcebreakers.length > 0 ? initialIcebreakers : [],
   );
   const [isSaving, setIsSaving] = useState(false);
 
@@ -78,14 +78,20 @@ export const IcebreakerSettings = ({
   return (
     <div className="flex flex-col gap-4 w-full">
       <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium">Conversation Starters (Icebreakers)</p>
+        <p className="text-sm font-medium">
+          Conversation Starters (Icebreakers)
+        </p>
         <p className="text-xs text-gray-500">
-          Define up to 4 prompt buttons that appear for new users who have never messaged your page.
+          Define up to 4 prompt buttons that appear for new users who have never
+          messaged your page.
         </p>
       </div>
 
       {icebreakers.map((item, index) => (
-        <div key={index} className="flex flex-col gap-3 p-3 border rounded-md relative bg-gray-50/50">
+        <div
+          key={index}
+          className="flex flex-col gap-3 p-3 border rounded-md relative bg-gray-50/50"
+        >
           <Button
             size="icon"
             variant="ghost"
@@ -99,7 +105,9 @@ export const IcebreakerSettings = ({
             <Field.Label>Question</Field.Label>
             <Input
               value={item.question}
-              onChange={(e) => handleChangeItem(index, { question: e.target.value })}
+              onChange={(e) =>
+                handleChangeItem(index, { question: e.target.value })
+              }
               placeholder="e.g. What are your prices?"
               maxLength={80}
             />
@@ -109,7 +117,9 @@ export const IcebreakerSettings = ({
             <Field.Label>Payload</Field.Label>
             <Input
               value={item.payload}
-              onChange={(e) => handleChangeItem(index, { payload: e.target.value })}
+              onChange={(e) =>
+                handleChangeItem(index, { payload: e.target.value })
+              }
               placeholder="e.g. PRICES_FLOW"
             />
           </Field.Root>

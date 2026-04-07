@@ -9,8 +9,12 @@ const listItemSchema = option.object({
     layout: { label: "Button Type (optional)" },
   }),
   buttonTitle: option.string.meta({ layout: { label: "Button Title" } }),
-  buttonUrl: option.string.meta({ layout: { label: "Button URL (for web_url)" } }),
-  buttonPayload: option.string.meta({ layout: { label: "Button Payload (for postback)" } }),
+  buttonUrl: option.string.meta({
+    layout: { label: "Button URL (for web_url)" },
+  }),
+  buttonPayload: option.string.meta({
+    layout: { label: "Button Payload (for postback)" },
+  }),
 });
 
 export const sendListTemplate = createAction({

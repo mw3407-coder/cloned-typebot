@@ -12,7 +12,8 @@ export const sendOneTimeNotification = createAction({
       layout: {
         label: "Notification Topic",
         isRequired: true,
-        helperText: "Displayed to the user as the notification subject they are opting into.",
+        helperText:
+          "Displayed to the user as the notification subject they are opting into.",
       },
     }),
     payload: option.string.meta({

@@ -130,7 +130,6 @@ async function handleMessagingEvent(
   // Ignore delivery and read receipts
   if (event.delivery || event.read) return;
 
-
   // ── Determine the text to pass to the bot ─────────────────────────────────
 
   let userText: string | null = null;

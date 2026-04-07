@@ -8,7 +8,7 @@ const FB_API_VERSION = "v19.0";
 const FB_MESSAGES_URL = `https://graph.facebook.com/${FB_API_VERSION}/me/messages`;
 
 type SendMessageParams = {
-  to: string;              // PSID (Page-Scoped User ID)
+  to: string; // PSID (Page-Scoped User ID)
   message: MessengerMessage;
   pageAccessToken: string;
 };
@@ -35,7 +35,7 @@ export async function sendMessengerMessage({
     const err = await res.json().catch(() => ({}));
     console.error("[Messenger] Send failed:", JSON.stringify(err));
     throw new Error(
-      `Facebook Send API error ${res.status}: ${JSON.stringify(err)}`
+      `Facebook Send API error ${res.status}: ${JSON.stringify(err)}`,
     );
   }
 }

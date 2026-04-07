@@ -6,21 +6,21 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type {
-  CarouselTemplateMessage,
-  ListTemplateMessage,
-  MediaTemplateMessage,
-  ReceiptTemplateMessage,
-  AttachmentMessage,
-  ButtonTemplateMessage,
-  TextMessage,
-  GenericElement,
-  ListElement,
-  Button,
-  QuickReply,
-  Summary,
-  ReceiptElement,
   Address,
   Adjustment,
+  AttachmentMessage,
+  Button,
+  ButtonTemplateMessage,
+  CarouselTemplateMessage,
+  GenericElement,
+  ListElement,
+  ListTemplateMessage,
+  MediaTemplateMessage,
+  QuickReply,
+  ReceiptElement,
+  ReceiptTemplateMessage,
+  Summary,
+  TextMessage,
 } from "./messengerTypes";
 
 // ── 1. Text + Quick Replies ───────────────────────────────────────────────────
@@ -32,7 +32,7 @@ import type {
  */
 export function buildTextMessage(
   text: string,
-  quickReplies?: QuickReply[]
+  quickReplies?: QuickReply[],
 ): TextMessage {
   const msg: TextMessage = { text: text.slice(0, 2000) };
   if (quickReplies && quickReplies.length > 0) {
@@ -57,7 +57,7 @@ export function buildTextMessage(
  */
 export function buildButtonTemplate(
   text: string,
-  buttons: Button[]
+  buttons: Button[],
 ): ButtonTemplateMessage {
   return {
     attachment: {
@@ -94,7 +94,7 @@ export function buildButtonTemplate(
  */
 export function buildCarousel(
   elements: GenericElement[],
-  imageAspectRatio: "horizontal" | "square" = "horizontal"
+  imageAspectRatio: "horizontal" | "square" = "horizontal",
 ): CarouselTemplateMessage {
   const sanitized = elements.slice(0, 10).map((el) => ({
     ...el,
@@ -132,7 +132,7 @@ export function buildCarousel(
 export function buildList(
   elements: ListElement[],
   globalButton?: [Button],
-  topElementStyle: "large" | "compact" = "compact"
+  topElementStyle: "large" | "compact" = "compact",
 ): ListTemplateMessage {
   const sanitized = elements.slice(0, 4).map((el) => ({
     ...el,
@@ -172,7 +172,7 @@ export function buildList(
 export function buildMediaTemplate(
   mediaType: "image" | "video",
   source: { url: string } | { attachment_id: string },
-  buttons?: Button[]
+  buttons?: Button[],
 ): MediaTemplateMessage {
   return {
     attachment: {
@@ -251,7 +251,7 @@ export function buildReceipt(params: {
 export function buildAttachment(
   type: "image" | "video" | "audio" | "file",
   url: string,
-  isReusable = true
+  isReusable = true,
 ): AttachmentMessage {
   return {
     attachment: {

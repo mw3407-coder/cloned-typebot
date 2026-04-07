@@ -31,6 +31,7 @@ type Props = {
   text: string | undefined;
   workspaceId: string;
   credentialsId: string;
+  overrideTypebotId?: string;
 };
 
 export const resumeMessengerFlow = async ({
@@ -38,6 +39,7 @@ export const resumeMessengerFlow = async ({
   text,
   workspaceId,
   credentialsId,
+  overrideTypebotId,
 }: Props): Promise<void> => {
   console.log(`${LOG_PREFIX} resumeMessengerFlow`, { psid, workspaceId });
 
@@ -83,6 +85,7 @@ export const resumeMessengerFlow = async ({
         text,
         workspaceId,
         sessionStore,
+        overrideTypebotId,
       });
 
       if (result === null) {
@@ -93,6 +96,7 @@ export const resumeMessengerFlow = async ({
         const startResult = await startNewSession({
           workspaceId,
           sessionStore,
+          overrideTypebotId,
         });
         await processFlowResult({
           psid,
@@ -131,11 +135,13 @@ const resumeFlow = async ({
   text,
   workspaceId,
   sessionStore,
+  overrideTypebotId,
 }: {
   state: any;
   text: string | undefined;
   workspaceId: string;
   sessionStore: any;
+  overrideTypebotId?: string;
 }) => {
   if (state) {
     const reply =
@@ -148,18 +154,20 @@ const resumeFlow = async ({
     });
   }
 
-  return startNewSession({ workspaceId, sessionStore });
+  return startNewSession({ workspaceId, sessionStore, overrideTypebotId });
 };
 
 const startNewSession = async ({
   workspaceId,
   sessionStore,
+  overrideTypebotId,
 }: {
   workspaceId: string;
   sessionStore: any;
+  overrideTypebotId?: string;
 }) => {
   const typebotRecord = await prisma.typebot.findFirst({
-    where: { workspaceId },
+    where: overrideTypebotId ? { id: overrideTypebotId } : { workspaceId },
     select: { id: true, publicId: true },
   });
 

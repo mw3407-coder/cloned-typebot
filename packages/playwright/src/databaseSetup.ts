@@ -5,7 +5,8 @@ import prisma from "@typebot.io/prisma";
 import { Plan, WorkspaceRole } from "@typebot.io/prisma/enum";
 
 // ⚠️ Generate your own API token: openssl rand -hex 32
-export const apiToken = process.env.TYPEBOT_API_TOKEN || "CHANGE_THIS_IN_PRODUCTION";
+export const apiToken =
+  process.env.TYPEBOT_API_TOKEN || "CHANGE_THIS_IN_PRODUCTION";
 
 export const proWorkspaceId = "proWorkspace";
 export const freeWorkspaceId = "freeWorkspace";
@@ -114,12 +115,12 @@ export const setupUsers = async () => {
 const setupCredentials = async () => {
   // ⚠️ Google OAuth tokens - Replace with your own or leave empty if not using Google Sheets
   const { encryptedData, iv } = await encrypt({
-    expiry_date: parseInt(process.env.GOOGLE_OAUTH_EXPIRY_DATE || "0"),
+    expiry_date: parseInt(process.env.GOOGLE_OAUTH_EXPIRY_DATE || "0", 10),
     access_token: process.env.GOOGLE_OAUTH_ACCESS_TOKEN || "",
     // This token is linked to a test Google account (typebot.test.user@gmail.com)
     refresh_token: process.env.GOOGLE_OAUTH_REFRESH_TOKEN || "",
   });
-  
+
   const { encryptedData: stripeEncryptedData, iv: stripeIv } = await encrypt({
     test: {
       publicKey: env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || "",
@@ -130,11 +131,11 @@ const setupCredentials = async () => {
       secretKey: env.STRIPE_SECRET_KEY || "",
     },
   } satisfies StripeCredentials["data"]);
-  
+
   const { encryptedData: mistralEncryptedData, iv: mistralIv } = await encrypt({
     apiKey: process.env.MISTRAL_API_KEY || "",
   });
-  
+
   return prisma.credentials.createMany({
     data: [
       {

@@ -48,29 +48,29 @@ export type Button = PostbackButton | UrlButton | PhoneButton;
 // ── Template Elements ────────────────────────────────────────────────────────
 
 export type GenericElement = {
-  title: string;           // max 80 chars
-  subtitle?: string;       // max 80 chars
-  image_url?: string;      // 1.91:1 ratio recommended
+  title: string; // max 80 chars
+  subtitle?: string; // max 80 chars
+  image_url?: string; // 1.91:1 ratio recommended
   default_action?: {
     type: "web_url";
     url: string;
     webview_height_ratio?: "compact" | "tall" | "full";
   };
-  buttons?: Button[];      // max 3
+  buttons?: Button[]; // max 3
 };
 
 export type ListElement = {
-  title: string;           // max 80 chars
+  title: string; // max 80 chars
   subtitle?: string;
-  image_url?: string;      // square image
-  buttons?: [Button];      // max 1 button per list item
+  image_url?: string; // square image
+  buttons?: [Button]; // max 1 button per list item
 };
 
 export type MediaElement = {
   media_type: "image" | "video";
-  url?: string;            // public URL of image/video
-  attachment_id?: string;  // FB attachment ID (from prior upload)
-  buttons?: Button[];      // max 2
+  url?: string; // public URL of image/video
+  attachment_id?: string; // FB attachment ID (from prior upload)
+  buttons?: Button[]; // max 2
 };
 
 export type ReceiptElement = {
@@ -117,8 +117,8 @@ export type ButtonTemplateMessage = {
     type: "template";
     payload: {
       template_type: "button";
-      text: string;           // max 640 chars
-      buttons: Button[];      // max 3
+      text: string; // max 640 chars
+      buttons: Button[]; // max 3
     };
   };
 };
@@ -129,7 +129,7 @@ export type CarouselTemplateMessage = {
     type: "template";
     payload: {
       template_type: "generic";
-      elements: GenericElement[];   // max 10
+      elements: GenericElement[]; // max 10
       image_aspect_ratio?: "horizontal" | "square";
     };
   };
@@ -142,8 +142,8 @@ export type ListTemplateMessage = {
     payload: {
       template_type: "list";
       top_element_style?: "large" | "compact";
-      elements: ListElement[];      // 2–4
-      buttons?: [Button];           // 1 global bottom button
+      elements: ListElement[]; // 2–4
+      buttons?: [Button]; // 1 global bottom button
     };
   };
 };
@@ -154,7 +154,7 @@ export type MediaTemplateMessage = {
     type: "template";
     payload: {
       template_type: "media";
-      elements: [MediaElement];     // exactly 1
+      elements: [MediaElement]; // exactly 1
     };
   };
 };
@@ -167,8 +167,8 @@ export type ReceiptTemplateMessage = {
       template_type: "receipt";
       recipient_name: string;
       order_number: string;
-      currency: string;             // ISO 4217 e.g. "USD"
-      payment_method: string;       // e.g. "Airtel Money"
+      currency: string; // ISO 4217 e.g. "USD"
+      payment_method: string; // e.g. "Airtel Money"
       order_url?: string;
       timestamp?: string;
       address?: Address;

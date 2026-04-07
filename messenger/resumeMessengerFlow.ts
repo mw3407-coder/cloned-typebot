@@ -11,33 +11,33 @@
 //   - Media/attachment block detection
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { BotMessage } from "@typebot.io/bot-engine/schemas/api";
 import { continueBotFlow } from "@typebot.io/bot-engine/continueBotFlow";
+import type { BotMessage } from "@typebot.io/bot-engine/schemas/api";
 import { startSession } from "@typebot.io/bot-engine/startSession";
 import { prisma } from "@typebot.io/prisma";
 import { convertInputToMessengerMessage } from "./convertInputToMessengerMessage";
 import { sendMessengerMessage } from "./sendMessengerMessage";
 import { sendTypingIndicator } from "./sendTypingIndicator";
 import {
+  buildAttachment,
   buildCarousel,
   buildList,
   buildMediaTemplate,
-  buildAttachment,
 } from "./templateBuilders";
-import type { MessengerMessage } from "./messengerTypes";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 function extractText(message: BotMessage): string {
   if (message.type === "text") {
-    return message.content?.richText
-      ?.map((block: any) =>
-        block.children
-          ?.map((c: any) => c.text ?? "")
-          .join("") ?? ""
-      )
-      .join("\n")
-      .trim() ?? "";
+    return (
+      message.content?.richText
+        ?.map(
+          (block: any) =>
+            block.children?.map((c: any) => c.text ?? "").join("") ?? "",
+        )
+        .join("\n")
+        .trim() ?? ""
+    );
   }
   return "";
 }
@@ -50,7 +50,7 @@ function extractText(message: BotMessage): string {
 async function sendBotMessage(
   message: BotMessage,
   psid: string,
-  pageAccessToken: string
+  pageAccessToken: string,
 ): Promise<string> {
   const type = message.type;
 
@@ -59,7 +59,11 @@ async function sendBotMessage(
     const text = extractText(message);
     if (!text) return "";
     await sendTypingIndicator(psid, pageAccessToken, text.length);
-    await sendMessengerMessage({ to: psid, message: { text }, pageAccessToken });
+    await sendMessengerMessage({
+      to: psid,
+      message: { text },
+      pageAccessToken,
+    });
     return text;
   }
 
@@ -132,7 +136,8 @@ async function sendBotMessage(
 
   // ── Media template block (custom: messengerMedia) ───────────────────────
   if (type === "messengerMedia") {
-    const { mediaType, url, attachmentId, buttons } = (message as any).content ?? {};
+    const { mediaType, url, attachmentId, buttons } =
+      (message as any).content ?? {};
     if (!mediaType || (!url && !attachmentId)) return "";
     await sendTypingIndicator(psid, pageAccessToken, 50);
     const source = attachmentId ? { attachment_id: attachmentId } : { url };
@@ -170,10 +175,10 @@ export async function resumeMessengerFlow({
   });
 
   if (existingSession) {
-    const { messages, input } = await continueBotFlow(
-      userMessage,
-      { version: 2, state: existingSession.state as any }
-    );
+    const { messages, input } = await continueBotFlow(userMessage, {
+      version: 2,
+      state: existingSession.state as any,
+    });
 
     let lastMessageText = "";
     for (const message of messages) {
@@ -181,7 +186,10 @@ export async function resumeMessengerFlow({
     }
 
     if (input) {
-      const inputMessage = convertInputToMessengerMessage(input, lastMessageText);
+      const inputMessage = convertInputToMessengerMessage(
+        input,
+        lastMessageText,
+      );
       if (inputMessage) {
         await sendTypingIndicator(psid, pageAccessToken, 40);
         await sendMessengerMessage({
@@ -192,7 +200,9 @@ export async function resumeMessengerFlow({
       }
     } else {
       // Flow finished — clean up session
-      await prisma.chatSession.delete({ where: { id: sessionId } }).catch(() => {});
+      await prisma.chatSession
+        .delete({ where: { id: sessionId } })
+        .catch(() => {});
     }
 
     return;

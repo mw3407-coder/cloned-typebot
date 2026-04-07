@@ -1,7 +1,7 @@
 import { Globe02Icon } from "@typebot.io/ui/icons/Globe02Icon";
 import { SourceCodeIcon } from "@typebot.io/ui/icons/SourceCodeIcon";
-import { WhatsAppLogo } from "@/components/logos/WhatsAppLogo";
 import { MessengerLogo } from "@/components/logos/MessengerLogo";
+import { WhatsAppLogo } from "@/components/logos/WhatsAppLogo";
 
 export const runtimes = [
   {

@@ -1,16 +1,16 @@
-import { useMutation } from "@tanstack/react-query";
 import { createId } from "@paralleldrive/cuid2";
+import { useMutation } from "@tanstack/react-query";
+import { env } from "@typebot.io/env";
 import { isEmpty } from "@typebot.io/lib/utils";
 import { Button } from "@typebot.io/ui/components/Button";
 import { Dialog } from "@typebot.io/ui/components/Dialog";
 import { Field } from "@typebot.io/ui/components/Field";
 import { Input } from "@typebot.io/ui/components/Input";
+import { useState } from "react";
 import { CopyInput } from "@/components/inputs/CopyInput";
 import { useWorkspace } from "@/features/workspace/WorkspaceProvider";
 import { orpc, queryClient } from "@/lib/queryClient";
 import { toast } from "@/lib/toast";
-import { useState } from "react";
-import { env } from "@typebot.io/env";
 
 type Props = {
   isOpen: boolean;
@@ -100,7 +100,9 @@ export const MessengerCredentialsDialog = ({
           </Field.Root>
 
           <div className="flex flex-col gap-2">
-            <p className="text-sm font-medium text-gray-700">Webhook Configuration</p>
+            <p className="text-sm font-medium text-gray-700">
+              Webhook Configuration
+            </p>
             <p className="text-sm text-gray-500">
               Configure these values in your Meta App's Messenger settings:
             </p>
