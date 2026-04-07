@@ -18,7 +18,8 @@ export const setPersistentMenu = createAction({
       layout: {
         label: "Menu Items (up to 3)",
         itemLabel: "menu item",
-        helperText: "These appear in the hamburger menu at the bottom of Messenger conversations.",
+        helperText:
+          "These appear in the hamburger menu at the bottom of Messenger conversations.",
       },
     }),
     responseMapping: option.saveResponseArray(["Response"]).meta({

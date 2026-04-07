@@ -5,7 +5,9 @@ const buttonSchema = option.object({
   type: option.enum(["web_url", "postback"] as const).meta({
     layout: { label: "Button Type", isRequired: true },
   }),
-  title: option.string.meta({ layout: { label: "Button Title", isRequired: true } }),
+  title: option.string.meta({
+    layout: { label: "Button Title", isRequired: true },
+  }),
   url: option.string.meta({ layout: { label: "URL (for web_url)" } }),
   payload: option.string.meta({ layout: { label: "Payload (for postback)" } }),
 });

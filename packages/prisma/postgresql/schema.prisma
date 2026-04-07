@@ -470,3 +470,14 @@ model ProcessedMessengerMessage {
   mid       String   @unique
   createdAt DateTime @default(now())
 }
+
+model MessengerKeywordRoute {
+  id            String   @id @default(cuid())
+  workspaceId   String
+  credentialsId String
+  keyword       String
+  typebotId     String
+  createdAt     DateTime @default(now())
+
+  @@unique([workspaceId, credentialsId, keyword])
+}

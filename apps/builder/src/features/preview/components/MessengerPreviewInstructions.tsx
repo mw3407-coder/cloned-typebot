@@ -41,7 +41,10 @@ export const MessengerPreviewInstructions = ({
 
   return (
     <div
-      className={cn("flex flex-col gap-4 overflow-y-auto w-full px-1", className)}
+      className={cn(
+        "flex flex-col gap-4 overflow-y-auto w-full px-1",
+        className,
+      )}
     >
       <div className="flex flex-col gap-2">
         <p className="text-sm font-medium">Instructions:</p>

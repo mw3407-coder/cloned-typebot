@@ -2,8 +2,8 @@ import { Button } from "@typebot.io/ui/components/Button";
 import { Field } from "@typebot.io/ui/components/Field";
 import { Input } from "@typebot.io/ui/components/Input";
 import { Select } from "@typebot.io/ui/components/Select";
-import { TrashIcon } from "@typebot.io/ui/icons/TrashIcon";
 import { PlusSignIcon } from "@typebot.io/ui/icons/PlusSignIcon";
+import { TrashIcon } from "@typebot.io/ui/icons/TrashIcon";
 import { useState } from "react";
 import { toast } from "@/lib/toast";
 
@@ -28,7 +28,7 @@ export const PersistentMenuSettings = ({
   onSave,
 }: Props) => {
   const [menuItems, setMenuItems] = useState<MenuItem[]>(
-    initialMenuItems.length > 0 ? initialMenuItems : []
+    initialMenuItems.length > 0 ? initialMenuItems : [],
   );
   const [isSaving, setIsSaving] = useState(false);
 
@@ -83,12 +83,16 @@ export const PersistentMenuSettings = ({
       <div className="flex flex-col gap-2">
         <p className="text-sm font-medium">Persistent Menu (Hamburger Menu)</p>
         <p className="text-xs text-gray-500">
-          Define up to 3 menu items that will always be visible to users in Messenger.
+          Define up to 3 menu items that will always be visible to users in
+          Messenger.
         </p>
       </div>
 
       {menuItems.map((item, index) => (
-        <div key={index} className="flex flex-col gap-3 p-3 border rounded-md relative bg-gray-50/50">
+        <div
+          key={index}
+          className="flex flex-col gap-3 p-3 border rounded-md relative bg-gray-50/50"
+        >
           <Button
             size="icon"
             variant="ghost"
@@ -102,7 +106,9 @@ export const PersistentMenuSettings = ({
             <Field.Label>Title</Field.Label>
             <Input
               value={item.title}
-              onChange={(e) => handleChangeItem(index, { title: e.target.value })}
+              onChange={(e) =>
+                handleChangeItem(index, { title: e.target.value })
+              }
               placeholder="e.g. Visit Website"
               maxLength={30}
             />
@@ -114,7 +120,9 @@ export const PersistentMenuSettings = ({
               <Select.Root
                 value={item.type}
                 onValueChange={(val) =>
-                  handleChangeItem(index, { type: val as "postback" | "web_url" })
+                  handleChangeItem(index, {
+                    type: val as "postback" | "web_url",
+                  })
                 }
                 items={[
                   { label: "Postback", value: "postback" },
@@ -134,7 +142,9 @@ export const PersistentMenuSettings = ({
                 <Field.Label>Payload</Field.Label>
                 <Input
                   value={item.payload}
-                  onChange={(e) => handleChangeItem(index, { payload: e.target.value })}
+                  onChange={(e) =>
+                    handleChangeItem(index, { payload: e.target.value })
+                  }
                   placeholder="e.g. START_FLOW"
                 />
               </Field.Root>
@@ -143,7 +153,9 @@ export const PersistentMenuSettings = ({
                 <Field.Label>URL</Field.Label>
                 <Input
                   value={item.url}
-                  onChange={(e) => handleChangeItem(index, { url: e.target.value })}
+                  onChange={(e) =>
+                    handleChangeItem(index, { url: e.target.value })
+                  }
                   placeholder="https://example.com"
                 />
               </Field.Root>

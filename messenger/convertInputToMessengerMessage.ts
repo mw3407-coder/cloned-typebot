@@ -4,11 +4,7 @@
 
 import { InputBlockType } from "@typebot.io/blocks-inputs/constants";
 import type { InputBlock } from "@typebot.io/blocks-inputs/schema";
-import type {
-  MessengerMessage,
-  Button,
-  QuickReply,
-} from "./messengerTypes";
+import type { Button, MessengerMessage, QuickReply } from "./messengerTypes";
 
 /**
  * Converts a Typebot InputBlock into the correct Facebook Messenger message.
@@ -28,7 +24,7 @@ import type {
  */
 export function convertInputToMessengerMessage(
   input: InputBlock,
-  promptText: string | undefined
+  promptText: string | undefined,
 ): MessengerMessage | null {
   const prompt = (promptText ?? "Choose an option:").slice(0, 640);
 

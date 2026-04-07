@@ -130,7 +130,7 @@ export async function POST(
 
 async function handleMessagingEvent(
   event: any,
-  pageAccessToken: string,
+  _pageAccessToken: string,
   params: { workspaceId: string; credentialsId: string },
 ) {
   const { workspaceId, credentialsId } = params;
@@ -145,7 +145,7 @@ async function handleMessagingEvent(
       await prisma.processedMessengerMessage.create({
         data: { mid },
       });
-    } catch (err) {
+    } catch (_err) {
       // Duplicate mid (P2002) - skip silently
       return;
     }
@@ -156,6 +156,37 @@ async function handleMessagingEvent(
 
   // Ignore delivery and read receipts
   if (event.delivery || event.read) return;
+
+  // ── Keyword routing check ──────────────────────────────────────────────────
+  const incomingText =
+    event.postback?.payload ??
+    event.message?.quick_reply?.payload ??
+    event.message?.text;
+
+  if (incomingText) {
+    const upperText = incomingText.trim().toUpperCase();
+    const keywordRoute = await prisma.messengerKeywordRoute.findFirst({
+      where: { workspaceId, credentialsId, keyword: upperText },
+    });
+
+    if (keywordRoute) {
+      const sessionId = `fbm-${credentialsId}-${psid}`;
+      await prisma.chatSession
+        .delete({ where: { id: sessionId } })
+        .catch(() => {
+          /* ignore if not found */
+        });
+
+      await resumeMessengerFlow({
+        psid,
+        text: incomingText,
+        credentialsId: credentialsId,
+        workspaceId: workspaceId,
+        overrideTypebotId: keywordRoute.typebotId,
+      });
+      return;
+    }
+  }
 
   // ── Determine the text to pass to the bot ─────────────────────────────────
 

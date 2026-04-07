@@ -8,9 +8,11 @@ export const sendAttachment = createAction({
     recipientId: option.string.meta({
       layout: { label: "Recipient PSID", isRequired: true },
     }),
-    attachmentType: option.enum(["image", "video", "audio", "file"] as const).meta({
-      layout: { label: "Attachment Type", isRequired: true },
-    }),
+    attachmentType: option
+      .enum(["image", "video", "audio", "file"] as const)
+      .meta({
+        layout: { label: "Attachment Type", isRequired: true },
+      }),
     url: option.string.meta({
       layout: { label: "File URL", isRequired: true },
     }),

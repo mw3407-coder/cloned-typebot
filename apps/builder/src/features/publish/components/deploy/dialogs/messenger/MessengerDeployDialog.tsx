@@ -1,6 +1,5 @@
 import { Accordion } from "@typebot.io/ui/components/Accordion";
 import { Alert } from "@typebot.io/ui/components/Alert";
-import { Button } from "@typebot.io/ui/components/Button";
 import { Dialog } from "@typebot.io/ui/components/Dialog";
 import { Field } from "@typebot.io/ui/components/Field";
 import { Switch } from "@typebot.io/ui/components/Switch";
@@ -9,12 +8,13 @@ import { InformationSquareIcon } from "@typebot.io/ui/icons/InformationSquareIco
 import type { JSX } from "react";
 import { CredentialsDropdown } from "@/features/credentials/components/CredentialsDropdown";
 import { useTypebot } from "@/features/editor/providers/TypebotProvider";
+import { IcebreakerSettings } from "@/features/messengerSettings/components/IcebreakerSettings";
+import { KeywordRoutingSettings } from "@/features/messengerSettings/components/KeywordRoutingSettings";
+import { PersistentMenuSettings } from "@/features/messengerSettings/components/PersistentMenuSettings";
 import { useWorkspace } from "@/features/workspace/WorkspaceProvider";
 import { PublishButton } from "../../../PublishButton";
 import type { DialogProps } from "../../DeployButton";
 import { MessengerCredentialsDialog } from "./MessengerCredentialsDialog";
-import { PersistentMenuSettings } from "@/features/messengerSettings/components/PersistentMenuSettings";
-import { IcebreakerSettings } from "@/features/messengerSettings/components/IcebreakerSettings";
 
 export const MessengerDeployDialog = ({
   isOpen,
@@ -128,7 +128,9 @@ export const MessengerDeployDialog = ({
               <li>
                 <Accordion.Root>
                   <Accordion.Item value="persistent-menu">
-                    <Accordion.Trigger>Configure Persistent Menu</Accordion.Trigger>
+                    <Accordion.Trigger>
+                      Configure Persistent Menu
+                    </Accordion.Trigger>
                     <Accordion.Panel>
                       <PersistentMenuSettings
                         credentialsId={typebot.messengerCredentialsId}
@@ -148,6 +150,17 @@ export const MessengerDeployDialog = ({
                         workspaceId={workspace?.id ?? ""}
                         initialIcebreakers={messengerSettings?.icebreakers}
                         onSave={handleIcebreakersSave}
+                      />
+                    </Accordion.Panel>
+                  </Accordion.Item>
+                  <Accordion.Item value="keyword-routing">
+                    <Accordion.Trigger>
+                      Configure Keyword Routing
+                    </Accordion.Trigger>
+                    <Accordion.Panel>
+                      <KeywordRoutingSettings
+                        credentialsId={typebot.messengerCredentialsId}
+                        workspaceId={workspace?.id ?? ""}
                       />
                     </Accordion.Panel>
                   </Accordion.Item>

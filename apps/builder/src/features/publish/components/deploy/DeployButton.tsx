@@ -5,6 +5,7 @@ import { useOpenControls } from "@typebot.io/ui/hooks/useOpenControls";
 import { SourceCodeIcon } from "@typebot.io/ui/icons/SourceCodeIcon";
 import { SquareLock01Icon } from "@typebot.io/ui/icons/SquareLock01Icon";
 import type { JSX } from "react";
+import { MessengerLogo } from "@/components/logos/MessengerLogo";
 import {
   WhatsAppLogo,
   whatsAppBrandColor,
@@ -18,6 +19,7 @@ import { FramerDeployDialog } from "./dialogs/framer/FramerDeployDialog";
 import { GtmDeployDialog } from "./dialogs/gtm/GtmDeployDialog";
 import { IframeDeployDialog } from "./dialogs/iframe/IframeDeployDialog";
 import { JavascriptDeployDialog } from "./dialogs/javascript/JavascriptDeployDialog";
+import { MessengerDeployDialog } from "./dialogs/messenger/MessengerDeployDialog";
 import { NotionDeployDialog } from "./dialogs/NotionDeployDialog";
 import { NextjsDeployDialog } from "./dialogs/nextjs/NextjsDeployDialog";
 import { ReactDeployDialog } from "./dialogs/react/ReactDeployDialog";
@@ -25,8 +27,6 @@ import { ScriptDeployDialog } from "./dialogs/script/ScriptDeployDialog";
 import { ShopifyDeployDialog } from "./dialogs/shopify/ShopifyDeployDialog";
 import { WebflowDeployDialog } from "./dialogs/webflow/WebflowDeployDialog";
 import { WhatsAppDeployDialog } from "./dialogs/whatsApp/WhatsAppDeployDialog";
-import { MessengerDeployDialog } from "./dialogs/messenger/MessengerDeployDialog";
-import { MessengerLogo } from "@/components/logos/MessengerLogo";
 import { WixDeployDialog } from "./dialogs/wix/WixDeployDialog";
 import { WordpressDeployDialog } from "./dialogs/wordpress/WordpressDeployDialog";
 import { BlinkLogo } from "./logos/BlinkLogo";

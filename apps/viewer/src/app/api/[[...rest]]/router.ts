@@ -4,9 +4,9 @@ import {
   publicProcedure,
 } from "@typebot.io/config/orpc/viewer/middlewares";
 import { fileUploadViewerRouter } from "@typebot.io/file-input-block/api/router";
+import { chatMessengerRouter } from "@typebot.io/messenger/api/router";
 import { webhookRouter } from "@typebot.io/webhook-block/api/router";
 import { chatWhatsAppRouter } from "@typebot.io/whatsapp/api/router";
-import { chatMessengerRouter } from "@typebot.io/messenger/api/router";
 import { z } from "zod";
 import {
   getMakeComBlocksInputSchema,

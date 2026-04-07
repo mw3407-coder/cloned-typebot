@@ -1,9 +1,9 @@
 import type { JSX } from "react";
 import type { runtimes } from "../data";
 import { ApiPreviewInstructions } from "./ApiPreviewInstructions";
+import { MessengerPreviewInstructions } from "./MessengerPreviewInstructions";
 import { WebPreview } from "./WebPreview";
 import { WhatsAppPreviewInstructions } from "./WhatsAppPreviewInstructions";
-import { MessengerPreviewInstructions } from "./MessengerPreviewInstructions";
 
 type Props = {
   runtime: (typeof runtimes)[number]["name"];

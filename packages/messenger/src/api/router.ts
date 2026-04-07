@@ -1,15 +1,14 @@
 import { publicProcedure } from "@typebot.io/config/orpc/viewer/middlewares";
 import { z } from "zod";
 import { WEBHOOK_SUCCESS_MESSAGE } from "../constants";
-import { messengerWebhookRequestBodySchema } from "../schemas";
-import {
-  handleMessengerVerification,
-  messengerVerificationInputSchema,
-} from "./handleMessengerVerification";
 import {
   handleMessengerIncomingMessage,
   messengerIncomingMessageInputSchema,
 } from "./handleMessengerIncomingMessage";
+import {
+  handleMessengerVerification,
+  messengerVerificationInputSchema,
+} from "./handleMessengerVerification";
 
 export const chatMessengerRouter = {
   verifyWebhook: publicProcedure

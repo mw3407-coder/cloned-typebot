@@ -9,9 +9,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import {
-  setMessengerPersistentMenu,
   setGetStartedButton,
   setGreetingText,
+  setMessengerPersistentMenu,
 } from "../packages/messenger/src/messengerProfile";
 
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
@@ -26,7 +26,7 @@ async function setup() {
   // ── 1. Greeting (shown before first message) ─────────────────────────────
   await setGreetingText(
     "Hi {{user_first_name}}! 👋 Welcome to Orbit 265 — your Malawi phone shop. Tap Get Started to browse our latest phones.",
-    PAGE_ACCESS_TOKEN
+    PAGE_ACCESS_TOKEN,
   );
   console.log("✅ Greeting set");
 
@@ -39,16 +39,18 @@ async function setup() {
   // Max 3 items. Postback payloads handled in route.ts
   await setMessengerPersistentMenu(
     [
-      { type: "postback", title: "🏠 Main Menu",     payload: "MENU_HOME"     },
-      { type: "postback", title: "📱 Browse Phones", payload: "MENU_PHONES"   },
-      { type: "postback", title: "📞 Contact Us",    payload: "MENU_CONTACT"  },
+      { type: "postback", title: "🏠 Main Menu", payload: "MENU_HOME" },
+      { type: "postback", title: "📱 Browse Phones", payload: "MENU_PHONES" },
+      { type: "postback", title: "📞 Contact Us", payload: "MENU_CONTACT" },
     ],
-    PAGE_ACCESS_TOKEN
+    PAGE_ACCESS_TOKEN,
   );
   console.log("✅ Persistent menu set");
 
   console.log("\n🎉 Messenger profile setup complete!");
-  console.log("The menu and greeting will appear in Messenger within a few minutes.");
+  console.log(
+    "The menu and greeting will appear in Messenger within a few minutes.",
+  );
   console.log("\nPostback payloads to handle in route.ts:");
   console.log("  GET_STARTED   → start welcome flow");
   console.log("  MENU_HOME     → start main menu flow");

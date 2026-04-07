@@ -16,7 +16,7 @@ const FB_MESSAGES_URL = `https://graph.facebook.com/${FB_API_VERSION}/me/message
 export async function sendTypingIndicator(
   to: string,
   pageAccessToken: string,
-  textLength = 100
+  textLength = 100,
 ): Promise<void> {
   // Show typing bubble
   await fetch(FB_MESSAGES_URL, {
@@ -39,7 +39,7 @@ export async function sendTypingIndicator(
  */
 export async function clearTypingIndicator(
   to: string,
-  pageAccessToken: string
+  pageAccessToken: string,
 ): Promise<void> {
   await fetch(FB_MESSAGES_URL, {
     method: "POST",
