@@ -60,7 +60,7 @@ export function convertInputToMessengerMessage(
           payload,
         };
       })
-      .filter((qr): qr is QuickReply => qr !== null);
+      .filter((qr): qr is NonNullable<typeof qr> => qr !== null);
 
     if (quickReplies.length === 0) return null;
 
