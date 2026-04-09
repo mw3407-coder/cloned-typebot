@@ -198,6 +198,7 @@ async function handleMessagingEvent(
   }
 
   // 2. Quick reply (chip tap — also has message.text set to the title)
+  // VERIFIED (Task 6): Correctly extracts payload from quick_reply
   else if (event.message?.quick_reply?.payload) {
     userText = event.message.quick_reply.payload;
   }

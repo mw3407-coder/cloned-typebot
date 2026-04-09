@@ -16,7 +16,7 @@ type RichTextBlock = { children?: { text?: string }[] };
 
 type BotMessage = {
   type: string;
-  content: string | { richText?: RichTextBlock[] };
+  content: string | { richText?: RichTextBlock[]; url?: string };
 };
 
 function extractText(message: BotMessage): string {
@@ -232,6 +232,27 @@ const processFlowResult = async ({
         });
         lastMessageText = plainText;
       }
+    } else if (
+      (message.type === "image" ||
+        message.type === "video" ||
+        message.type === "audio") &&
+      typeof message.content !== "string" &&
+      message.content.url
+    ) {
+      await sendTypingIndicator(psid, pageAccessToken, 20);
+      await sendMessengerMessage({
+        to: psid,
+        message: {
+          attachment: {
+            type: message.type as "image" | "video" | "audio",
+            payload: {
+              url: message.content.url,
+              ...(message.type === "image" ? { is_reusable: true } : {}),
+            },
+          },
+        },
+        pageAccessToken,
+      });
     }
   }
 
