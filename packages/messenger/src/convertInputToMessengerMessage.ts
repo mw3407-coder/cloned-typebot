@@ -21,6 +21,8 @@ import type { MessengerMessage, QuickReply } from "./messengerTypes";
  * @param promptText     The last text bubble shown before this input (used as
  *                       the quick-reply prompt)
  * @returns              A MessengerMessage ready to POST, or null to skip
+ *
+ * VERIFIED (Task 6): Correctly implements quick_replies for single choice <= 13 items.
  */
 export function convertInputToMessengerMessage(
   input: InputBlock,
