@@ -5,7 +5,8 @@ import { Field } from "@typebot.io/ui/components/Field";
 import { Switch } from "@typebot.io/ui/components/Switch";
 import { useOpenControls } from "@typebot.io/ui/hooks/useOpenControls";
 import { InformationSquareIcon } from "@typebot.io/ui/icons/InformationSquareIcon";
-import type { JSX } from "react";
+import { TickIcon } from "@typebot.io/ui/icons/TickIcon";
+import { type JSX, useState } from "react";
 import { CredentialsDropdown } from "@/features/credentials/components/CredentialsDropdown";
 import { useTypebot } from "@/features/editor/providers/TypebotProvider";
 import { IcebreakerSettings } from "@/features/messengerSettings/components/IcebreakerSettings";
@@ -27,6 +28,8 @@ export const MessengerDeployDialog = ({
     onOpen,
     onClose: onCredentialsDialogClose,
   } = useOpenControls();
+  const [isPersistentMenuLive, setIsPersistentMenuLive] = useState(false);
+  const [isIcebreakersLive, setIsIcebreakersLive] = useState(false);
 
   const messengerSettings = typebot?.settings.messenger;
 
@@ -54,8 +57,18 @@ export const MessengerDeployDialog = ({
     });
   };
 
-  const handlePersistentMenuSave = (menuItems: any[]) => {
-    if (!typebot) return;
+  const handlePersistentMenuSave = async (menuItems: any[]) => {
+    if (!typebot || !workspace) return;
+    const response = await fetch("/api/messenger/persistent-menu", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        credentialsId: typebot.messengerCredentialsId,
+        workspaceId: workspace.id,
+        menuItems,
+      }),
+    });
+    if (response.ok) setIsPersistentMenuLive(true);
     updateTypebot({
       updates: {
         settings: {
@@ -69,8 +82,18 @@ export const MessengerDeployDialog = ({
     });
   };
 
-  const handleIcebreakersSave = (icebreakers: any[]) => {
-    if (!typebot) return;
+  const handleIcebreakersSave = async (icebreakers: any[]) => {
+    if (!typebot || !workspace) return;
+    const response = await fetch("/api/messenger/icebreakers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        credentialsId: typebot.messengerCredentialsId,
+        workspaceId: workspace.id,
+        icebreakers,
+      }),
+    });
+    if (response.ok) setIsIcebreakersLive(true);
     updateTypebot({
       updates: {
         settings: {
@@ -129,7 +152,15 @@ export const MessengerDeployDialog = ({
                 <Accordion.Root>
                   <Accordion.Item value="persistent-menu">
                     <Accordion.Trigger>
-                      Configure Persistent Menu
+                      <div className="flex items-center justify-between w-full pr-4">
+                        <span>Configure Persistent Menu</span>
+                        {isPersistentMenuLive && (
+                          <div className="flex items-center gap-1 text-green-500 text-xs">
+                            <TickIcon />
+                            <span>Live on Facebook</span>
+                          </div>
+                        )}
+                      </div>
                     </Accordion.Trigger>
                     <Accordion.Panel>
                       <PersistentMenuSettings
@@ -142,7 +173,15 @@ export const MessengerDeployDialog = ({
                   </Accordion.Item>
                   <Accordion.Item value="icebreakers">
                     <Accordion.Trigger>
-                      Configure Conversation Starters
+                      <div className="flex items-center justify-between w-full pr-4">
+                        <span>Configure Conversation Starters</span>
+                        {isIcebreakersLive && (
+                          <div className="flex items-center gap-1 text-green-500 text-xs">
+                            <TickIcon />
+                            <span>Live on Facebook</span>
+                          </div>
+                        )}
+                      </div>
                     </Accordion.Trigger>
                     <Accordion.Panel>
                       <IcebreakerSettings
