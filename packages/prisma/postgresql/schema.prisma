@@ -481,3 +481,17 @@ model MessengerKeywordRoute {
 
   @@unique([workspaceId, credentialsId, keyword])
 }
+
+model MessengerContact {
+  id            String   @id @default(cuid())
+  psid          String   @unique
+  workspaceId   String
+  credentialsId String
+  firstName     String?
+  lastName      String?
+  name          String?
+  locale        String?
+  timezone      Float?
+  firstSeenAt   DateTime @default(now())
+  lastSeenAt    DateTime @updatedAt
+}

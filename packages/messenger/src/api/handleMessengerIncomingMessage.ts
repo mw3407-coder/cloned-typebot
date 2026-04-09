@@ -1,5 +1,9 @@
+import { decrypt } from "@typebot.io/credentials/decrypt";
+import { getCredentials } from "@typebot.io/credentials/getCredentials";
+import prisma from "@typebot.io/prisma";
 import { z } from "zod";
 import { LOG_PREFIX, WEBHOOK_SUCCESS_MESSAGE } from "../constants";
+import { fetchMessengerProfile } from "../fetchMessengerProfile";
 import { resumeMessengerFlow } from "../resumeMessengerFlow";
 import { messengerWebhookRequestBodySchema } from "../schemas";
 
@@ -24,9 +28,51 @@ export const handleMessengerIncomingMessage = ({
   // Fire-and-forget: process the flow asynchronously so we return
   // WEBHOOK_SUCCESS_MESSAGE to Facebook immediately and prevent retries.
   (async () => {
+    const encryptedCredentials = await getCredentials(
+      credentialsId,
+      workspaceId,
+    );
+    const decrypted = encryptedCredentials
+      ? ((await decrypt(
+          encryptedCredentials.data as string,
+          encryptedCredentials.iv as string,
+        )) as { pageAccessToken?: string })
+      : {};
+    const pageAccessToken = decrypted.pageAccessToken;
+
     for (const e of entry) {
       for (const messaging of e.messaging) {
         const psid = messaging.sender.id;
+
+        if (pageAccessToken) {
+          const existingContact = await prisma.messengerContact.findUnique({
+            where: { psid },
+          });
+
+          if (!existingContact) {
+            fetchMessengerProfile(
+              psid,
+              workspaceId,
+              credentialsId,
+              pageAccessToken,
+            ).catch((err) =>
+              console.warn(`${LOG_PREFIX} Failed to fetch user profile:`, err),
+            );
+          } else {
+            prisma.messengerContact
+              .update({
+                where: { psid },
+                data: { lastSeenAt: new Date() },
+              })
+              .catch((err) =>
+                console.warn(
+                  `${LOG_PREFIX} Failed to update lastSeenAt:`,
+                  err,
+                ),
+              );
+          }
+        }
+
         const text =
           messaging.message?.quick_reply?.payload ??
           messaging.message?.text ??
