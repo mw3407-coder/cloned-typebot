@@ -11,6 +11,7 @@ import { LOG_PREFIX, MESSENGER_SESSION_ID_PREFIX } from "./constants";
 import { convertInputToMessengerMessage } from "./convertInputToMessengerMessage";
 import { sendMessengerMessage } from "./sendMessengerMessage";
 import { sendTypingIndicator } from "./sendTypingIndicator";
+import { buildAttachment } from "./templateBuilders";
 
 type RichTextBlock = { children?: { text?: string }[] };
 
@@ -231,6 +232,22 @@ const processFlowResult = async ({
           pageAccessToken,
         });
         lastMessageText = plainText;
+      }
+    }
+    if (
+      message.type === "image" ||
+      message.type === "video" ||
+      message.type === "audio"
+    ) {
+      const content = (message as any).content;
+      const url = content?.url;
+      if (url) {
+        await sendTypingIndicator(psid, pageAccessToken, 20);
+        await sendMessengerMessage({
+          to: psid,
+          message: buildAttachment(message.type, url),
+          pageAccessToken,
+        });
       }
     }
   }
