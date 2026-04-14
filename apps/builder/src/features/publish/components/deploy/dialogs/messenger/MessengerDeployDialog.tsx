@@ -10,7 +10,6 @@ import { type JSX, useState } from "react";
 import { CredentialsDropdown } from "@/features/credentials/components/CredentialsDropdown";
 import { useTypebot } from "@/features/editor/providers/TypebotProvider";
 import { IcebreakerSettings } from "@/features/messengerSettings/components/IcebreakerSettings";
-import { KeywordRoutingSettings } from "@/features/messengerSettings/components/KeywordRoutingSettings";
 import { PersistentMenuSettings } from "@/features/messengerSettings/components/PersistentMenuSettings";
 import { useWorkspace } from "@/features/workspace/WorkspaceProvider";
 import { PublishButton } from "../../../PublishButton";
@@ -189,17 +188,6 @@ export const MessengerDeployDialog = ({
                         workspaceId={workspace?.id ?? ""}
                         initialIcebreakers={messengerSettings?.icebreakers}
                         onSave={handleIcebreakersSave}
-                      />
-                    </Accordion.Panel>
-                  </Accordion.Item>
-                  <Accordion.Item value="keyword-routing">
-                    <Accordion.Trigger>
-                      Configure Keyword Routing
-                    </Accordion.Trigger>
-                    <Accordion.Panel>
-                      <KeywordRoutingSettings
-                        credentialsId={typebot.messengerCredentialsId}
-                        workspaceId={workspace?.id ?? ""}
                       />
                     </Accordion.Panel>
                   </Accordion.Item>
