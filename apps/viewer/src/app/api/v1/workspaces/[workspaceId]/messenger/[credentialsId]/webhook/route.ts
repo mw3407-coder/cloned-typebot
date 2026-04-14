@@ -14,6 +14,7 @@
 import { decrypt } from "@typebot.io/credentials/decrypt";
 import { LOG_PREFIX } from "@typebot.io/messenger/constants";
 import { fetchMessengerProfile } from "@typebot.io/messenger/fetchMessengerProfile";
+import { env } from "@typebot.io/env";
 import { resumeMessengerFlow } from "@typebot.io/messenger/resumeMessengerFlow";
 import prisma from "@typebot.io/prisma";
 import crypto from "crypto";
@@ -53,8 +54,7 @@ export async function GET(
   if (!credentials)
     return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const data = await decrypt(credentials.data, credentials.iv);
-  const verifyToken = (data as any).verifyToken;
+  const verifyToken = env.MESSENGER_VERIFY_TOKEN;
 
   if (mode === "subscribe" && token === verifyToken) {
     return new NextResponse(challenge, { status: 200 });
