@@ -1,13 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
-import { Button } from "@typebot.io/ui/components/Button";
-import { Field } from "@typebot.io/ui/components/Field";
-import { Input } from "@typebot.io/ui/components/Input";
-import { PlusSignIcon } from "@typebot.io/ui/icons/PlusSignIcon";
-import { TrashIcon } from "@typebot.io/ui/icons/TrashIcon";
-import { useEffect, useState } from "react";
-import { BasicSelect } from "@/components/inputs/BasicSelect";
-import { orpc } from "@/lib/queryClient";
-import { toast } from "@/lib/toast";
+import { BasicSelect } from "@/components/BasicSelect";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { useTypebot } from "@/features/editor/providers/TypebotProvider";
+import { trpc } from "@/lib/trpc";
+import { PlusIcon, TrashIcon } from "lucide-react";
+import { useState, useEffect } from "react";
 
 type KeywordRoute = {
   id?: string;
@@ -15,193 +14,207 @@ type KeywordRoute = {
   typebotId: string;
 };
 
-type Props = {
-  credentialsId: string;
-  workspaceId: string;
-};
-
-export const KeywordRoutingSettings = ({
-  credentialsId,
-  workspaceId,
-}: Props) => {
+export const KeywordRoutingSettings = () => {
+  const { toast } = useToast();
+  const { typebot, save } = useTypebot();
   const [routes, setRoutes] = useState<KeywordRoute[]>([]);
-  const [isSaving, setIsSaving] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { data: typebotsData } = useQuery(
-    orpc.typebot.listTypebots.queryOptions({
-      input: { workspaceId },
-    }),
+  const { data: typebots } = trpc.typebot.list.useQuery(
+    { workspaceId: typebot?.workspaceId! },
+    { enabled: !!typebot?.workspaceId }
   );
 
-  const typebots = typebotsData?.typebots ?? [];
+  const { data: existingRoutes, refetch } =
+    trpc.messenger.getKeywordRoutes.useQuery(
+      {
+        workspaceId: typebot?.workspaceId!,
+        credentialsId: typebot?.messengerCredentialsId!,
+      },
+      { enabled: !!typebot?.workspaceId && !!typebot?.messengerCredentialsId }
+    );
 
   useEffect(() => {
-    const fetchRoutes = async () => {
-      try {
-        const response = await fetch(
-          `/api/messenger/keyword-routes?workspaceId=${workspaceId}&credentialsId=${credentialsId}`,
-        );
-        const data = await response.json();
-        if (response.ok) {
-          setRoutes(data.routes);
-        }
-      } catch (error) {
-        console.error("Failed to fetch keyword routes", error);
-      }
-    };
-    fetchRoutes();
-  }, [workspaceId, credentialsId]);
+    if (existingRoutes) {
+      setRoutes(existingRoutes);
+    }
+  }, [existingRoutes]);
 
-  const handleAddRoute = () => {
-    setRoutes([{ keyword: "", typebotId: "" }, ...routes]);
+  const addNewRoute = () => {
+    setRoutes([...routes, { keyword: "", typebotId: "" }]);
   };
 
-  const handleSaveRoute = async (index: number) => {
+  const updateRoute = (index: number, field: keyof KeywordRoute, value: string) => {
+    const updated = [...routes];
+    updated[index] = { ...updated[index], [field]: value };
+    setRoutes(updated);
+  };
+
+  const deleteRoute = (index: number) => {
+    const updated = routes.filter((_, i) => i !== index);
+    setRoutes(updated);
+  };
+
+  const saveRoute = async (index: number) => {
     const route = routes[index];
     if (!route.keyword || !route.typebotId) {
       toast({
         title: "Error",
         description: "Keyword and Typebot are required",
-        type: "error",
+        variant: "destructive",
       });
       return;
     }
-    setIsSaving(index.toString());
+
+    setIsLoading(true);
     try {
-      const response = await fetch("/api/messenger/keyword-routes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          workspaceId,
-          credentialsId,
-          keyword: route.keyword,
-          typebotId: route.typebotId,
-        }),
+      await trpc.messenger.upsertKeywordRoute.mutate({
+        workspaceId: typebot?.workspaceId!,
+        credentialsId: typebot?.messengerCredentialsId!,
+        keyword: route.keyword.toUpperCase().trim(),
+        typebotId: route.typebotId,
       });
-      const data = await response.json();
-      if (response.ok) {
-        const newRoutes = [...routes];
-        newRoutes[index] = data.route;
-        setRoutes(newRoutes);
-        toast({
-          title: "Success",
-          description: "Keyword route saved",
-          type: "success",
-        });
-      } else {
-        throw new Error(data.error);
-      }
-    } catch (error: any) {
+      toast({ title: "Success", description: "Keyword route saved" });
+      refetch();
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message,
-        type: "error",
+        description: "Failed to save keyword route",
+        variant: "destructive",
       });
     } finally {
-      setIsSaving(null);
+      setIsLoading(false);
     }
   };
 
-  const handleDeleteRoute = async (index: number) => {
-    const route = routes[index];
-    if (!route.id) {
-      setRoutes(routes.filter((_, i) => i !== index));
-      return;
-    }
+  const deleteSavedRoute = async (route: KeywordRoute) => {
+    if (!route.id) return;
+    setIsLoading(true);
     try {
-      const response = await fetch(
-        `/api/messenger/keyword-routes?id=${route.id}`,
-        {
-          method: "DELETE",
-        },
-      );
-      if (response.ok) {
-        setRoutes(routes.filter((_, i) => i !== index));
-        toast({
-          title: "Success",
-          description: "Keyword route deleted",
-          type: "success",
-        });
-      }
-    } catch (_error) {
+      await trpc.messenger.deleteKeywordRoute.mutate({
+        workspaceId: typebot?.workspaceId!,
+        credentialsId: typebot?.messengerCredentialsId!,
+        routeId: route.id,
+      });
+      toast({ title: "Success", description: "Keyword route deleted" });
+      refetch();
+    } catch (error) {
       toast({
         title: "Error",
         description: "Failed to delete keyword route",
-        type: "error",
+        variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  if (!typebot?.messengerCredentialsId) {
+    return (
+      <div className="p-4 text-center text-muted-foreground">
+        Please connect Messenger credentials first.
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-4 w-full">
-      <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium">Keyword Routing</p>
-        <p className="text-xs text-gray-500">
-          Route users to specific flows based on keywords they type.
-        </p>
+    <div className="flex flex-col gap-4">
+      <div className="text-sm text-muted-foreground">
+        Define keywords that will trigger specific typebots. When a user sends a
+        message matching a keyword, the current session will be reset and the
+        mapped typebot will start.
       </div>
 
-      <Button
-        variant="outline"
-        size="sm"
-        className="w-full flex items-center gap-2"
-        onClick={handleAddRoute}
-      >
-        <PlusSignIcon className="size-4" />
-        Add Keyword Route
-      </Button>
-
       {routes.map((route, index) => (
-        <div
-          key={route.id ?? `new-${index}`}
-          className="flex flex-col gap-3 p-3 border rounded-md relative bg-gray-50/50"
-        >
-          <Button
-            size="icon"
-            variant="ghost"
-            className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
-            onClick={() => handleDeleteRoute(index)}
-          >
-            <TrashIcon className="size-4" />
-          </Button>
-
-          <Field.Root>
-            <Field.Label>Keyword</Field.Label>
-            <Input
-              value={route.keyword}
-              onChange={(e) => {
-                const newRoutes = [...routes];
-                newRoutes[index].keyword = e.target.value;
-                setRoutes(newRoutes);
-              }}
-              placeholder="e.g. PRICE"
-            />
-          </Field.Root>
-
-          <Field.Root>
-            <Field.Label>Target Flow</Field.Label>
-            <BasicSelect
-              items={typebots.map((t) => ({ label: t.name, value: t.id }))}
-              value={route.typebotId}
-              onChange={(val) => {
-                const newRoutes = [...routes];
-                newRoutes[index].typebotId = val as string;
-                setRoutes(newRoutes);
-              }}
-              placeholder="Select a flow"
-            />
-          </Field.Root>
-
+        <div key={index} className="flex flex-col gap-2 p-3 border rounded-md">
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <Label>Keyword</Label>
+              <Input
+                value={route.keyword}
+                onChange={(e) => updateRoute(index, "keyword", e.target.value)}
+                placeholder="e.g., PRICE"
+                className="uppercase"
+              />
+            </div>
+            <div className="flex-1">
+              <Label>Typebot</Label>
+              <BasicSelect
+                value={route.typebotId}
+                onValueChange={(value) =>
+                  updateRoute(index, "typebotId", value)
+                }
+                options={
+                  typebots?.map((tb) => ({
+                    label: tb.name,
+                    value: tb.id,
+                  })) ?? []
+                }
+                placeholder="Select a typebot"
+              />
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => deleteRoute(index)}
+              className="mt-6"
+            >
+              <TrashIcon className="h-4 w-4" />
+            </Button>
+          </div>
           <Button
             size="sm"
             className="mt-2"
-            onClick={() => handleSaveRoute(index)}
-            isLoading={isSaving === index.toString()}
+            onClick={() => saveRoute(index)}
+            disabled={isLoading}
           >
             Save
           </Button>
         </div>
       ))}
+
+      <Button
+        variant="outline"
+        onClick={addNewRoute}
+        className="w-full"
+        disabled={isLoading}
+      >
+        <PlusIcon className="mr-2 h-4 w-4" />
+        Add Keyword Route
+      </Button>
+
+      {existingRoutes && existingRoutes.length > 0 && (
+        <div className="mt-4">
+          <Label>Saved Routes</Label>
+          <div className="flex flex-col gap-2 mt-2">
+            {existingRoutes.map((route) => (
+              <div
+                key={route.id}
+                className="flex items-center justify-between p-2 border rounded-md"
+              >
+                <div>
+                  <span className="font-mono text-sm font-medium">
+                    {route.keyword}
+                  </span>
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    →{" "}
+                    {typebots?.find((tb) => tb.id === route.typebotId)?.name ??
+                      route.typebotId}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => deleteSavedRoute(route)}
+                  disabled={isLoading}
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
