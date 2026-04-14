@@ -12,6 +12,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { decrypt } from "@typebot.io/credentials/decrypt";
+import { LOG_PREFIX } from "@typebot.io/messenger/constants";
+import { fetchMessengerProfile } from "@typebot.io/messenger/fetchMessengerProfile";
 import { env } from "@typebot.io/env";
 import { resumeMessengerFlow } from "@typebot.io/messenger/resumeMessengerFlow";
 import prisma from "@typebot.io/prisma";
@@ -130,7 +132,7 @@ export async function POST(
 
 async function handleMessagingEvent(
   event: any,
-  _pageAccessToken: string,
+  pageAccessToken: string,
   params: { workspaceId: string; credentialsId: string },
 ) {
   const { workspaceId, credentialsId } = params;
@@ -156,6 +158,31 @@ async function handleMessagingEvent(
 
   // Ignore delivery and read receipts
   if (event.delivery || event.read) return;
+
+  // ── Profile fetching ────────────────────────────────────────────────────────
+  const existingContact = await prisma.messengerContact.findUnique({
+    where: { psid },
+  });
+
+  if (!existingContact) {
+    fetchMessengerProfile(
+      psid,
+      workspaceId,
+      credentialsId,
+      pageAccessToken,
+    ).catch((err) =>
+      console.warn(`${LOG_PREFIX} Failed to fetch user profile:`, err),
+    );
+  } else {
+    prisma.messengerContact
+      .update({
+        where: { psid },
+        data: { lastSeenAt: new Date() },
+      })
+      .catch((err) =>
+        console.warn(`${LOG_PREFIX} Failed to update lastSeenAt:`, err),
+      );
+  }
 
   // ── Keyword routing check ──────────────────────────────────────────────────
   const incomingText =
